@@ -1,29 +1,54 @@
-# Welcome to your Lovable project
+# Auditor Promptov pre PWA
 
-This project was built with [Lovable](https://lovable.dev).
+Inštalovateľná PWA na analýzu, hodnotenie a vylepšovanie promptov pre PWA aplikácie podľa 7 kritérií:
+špecifikácia, technická presnosť, UX/UI, výkon, testovanie, nasadenie, kreativita.
 
-## Build with Lovable
+## Funkcie
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+- **Dashboard** – prehľad skóre, priemer auditov, odporúčania
+- **Analyzátor** – editor promptu s bodovaním v reálnom čase, checklisty, auto-vylepšenie, diff viewer, export PDF
+- **Detail kritérií** – váhy, checklisty a odborné tipy
+- **Návrhy a šablóny** – knižnica promptov + CI/CD workflow šablóna
+- **Testovací sandbox** – A/B porovnanie dvoch verzií promptu a odhad Lighthouse skóre (offline)
+- **História & reporty** – archív auditov, export CSV / JSON
+- **Nastavenia & tím** – autor, tím, notifikácie, minimálne akceptačné skóre
+- **Pomoc a vzdelávanie** – príručka a FAQ
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+## Technológie
 
-## Development
+React 19 + TypeScript, TanStack Start (Vite 7), Tailwind CSS v4, jsPDF, Papa Parse, lucide-react, shadcn/ui.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Dizajn tokeny (`src/styles.css`): `#0B74FF` primary, `#00C48C` accent, `#F6F8FA` surface, `#12263A` ink.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+## PWA
+
+- `public/manifest.webmanifest` (standalone, ikony 192/512/maskable, theme color `#0B74FF`)
+- inštalácia na domovskú obrazovku (Chrome/Edge: ikona v adresnom riadku, iOS Safari: Zdieľať → Pridať na plochu)
+- všetky dáta (audity, nastavenia, koncept promptu) sú v `localStorage`, analýza beží plne lokálne bez siete
+
+## Vývoj
+
+```bash
+bun install
+bun run dev     # http://localhost:8080
+bun run build
 ```
 
-## Built with
+## Štruktúra
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+```
+src/
+  lib/criteria.ts    # 7 kritérií + skórovací engine + auto-vylepšenie
+  lib/diff.ts        # LCS diff po riadkoch
+  lib/export.ts      # PDF / CSV / JSON export
+  lib/templates.ts   # knižnica šablón
+  lib/storage.ts     # história a nastavenia (localStorage)
+  components/        # AppShell, ScoreVisuals, shadcn/ui
+  routes/            # index, analyzator, kriteria, sablony, sandbox, historia, nastavenia, pomoc
+```
+
+## Ďalšie kroky (nezahrnuté v tejto verzii)
+
+- prihlásenie (OAuth2/JWT) a tímové zdieľanie auditov cez Lovable Cloud
+- reálna Lighthouse API integrácia namiesto lokálneho odhadu
+- service worker cache (Workbox) pre plné offline cachovanie assetov
