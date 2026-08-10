@@ -23,7 +23,7 @@ export const Route = createFileRoute("/sandbox")({
       },
     ],
   }),
-  component: Sandbox;
+  component: Sandbox,
 });
 
 function Sandbox() {
