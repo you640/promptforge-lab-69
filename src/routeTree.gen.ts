@@ -11,7 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyzatorRouteImport } from './routes/analyzator'
+import { Route as HistoriaRouteImport } from './routes/historia'
 import { Route as KriteriaRouteImport } from './routes/kriteria'
+import { Route as NastaveniaRouteImport } from './routes/nastavenia'
+import { Route as PomocRouteImport } from './routes/pomoc'
+import { Route as SablonyRouteImport } from './routes/sablony'
+import { Route as SandboxRouteImport } from './routes/sandbox'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +28,110 @@ const AnalyzatorRoute = AnalyzatorRouteImport.update({
   path: '/analyzator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HistoriaRoute = HistoriaRouteImport.update({
+  id: '/historia',
+  path: '/historia',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KriteriaRoute = KriteriaRouteImport.update({
   id: '/kriteria',
   path: '/kriteria',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NastaveniaRoute = NastaveniaRouteImport.update({
+  id: '/nastavenia',
+  path: '/nastavenia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PomocRoute = PomocRouteImport.update({
+  id: '/pomoc',
+  path: '/pomoc',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SablonyRoute = SablonyRouteImport.update({
+  id: '/sablony',
+  path: '/sablony',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SandboxRoute = SandboxRouteImport.update({
+  id: '/sandbox',
+  path: '/sandbox',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/historia': typeof HistoriaRoute
   '/kriteria': typeof KriteriaRoute
+  '/nastavenia': typeof NastaveniaRoute
+  '/pomoc': typeof PomocRoute
+  '/sablony': typeof SablonyRoute
+  '/sandbox': typeof SandboxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/historia': typeof HistoriaRoute
   '/kriteria': typeof KriteriaRoute
+  '/nastavenia': typeof NastaveniaRoute
+  '/pomoc': typeof PomocRoute
+  '/sablony': typeof SablonyRoute
+  '/sandbox': typeof SandboxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/historia': typeof HistoriaRoute
   '/kriteria': typeof KriteriaRoute
+  '/nastavenia': typeof NastaveniaRoute
+  '/pomoc': typeof PomocRoute
+  '/sablony': typeof SablonyRoute
+  '/sandbox': typeof SandboxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyzator' | '/kriteria'
+  fullPaths:
+    | '/'
+    | '/analyzator'
+    | '/historia'
+    | '/kriteria'
+    | '/nastavenia'
+    | '/pomoc'
+    | '/sablony'
+    | '/sandbox'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyzator' | '/kriteria'
-  id: '__root__' | '/' | '/analyzator' | '/kriteria'
+  to:
+    | '/'
+    | '/analyzator'
+    | '/historia'
+    | '/kriteria'
+    | '/nastavenia'
+    | '/pomoc'
+    | '/sablony'
+    | '/sandbox'
+  id:
+    | '__root__'
+    | '/'
+    | '/analyzator'
+    | '/historia'
+    | '/kriteria'
+    | '/nastavenia'
+    | '/pomoc'
+    | '/sablony'
+    | '/sandbox'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzatorRoute: typeof AnalyzatorRoute
+  HistoriaRoute: typeof HistoriaRoute
   KriteriaRoute: typeof KriteriaRoute
+  NastaveniaRoute: typeof NastaveniaRoute
+  PomocRoute: typeof PomocRoute
+  SablonyRoute: typeof SablonyRoute
+  SandboxRoute: typeof SandboxRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +150,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyzatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/historia': {
+      id: '/historia'
+      path: '/historia'
+      fullPath: '/historia'
+      preLoaderRoute: typeof HistoriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kriteria': {
       id: '/kriteria'
       path: '/kriteria'
       fullPath: '/kriteria'
       preLoaderRoute: typeof KriteriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nastavenia': {
+      id: '/nastavenia'
+      path: '/nastavenia'
+      fullPath: '/nastavenia'
+      preLoaderRoute: typeof NastaveniaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pomoc': {
+      id: '/pomoc'
+      path: '/pomoc'
+      fullPath: '/pomoc'
+      preLoaderRoute: typeof PomocRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sablony': {
+      id: '/sablony'
+      path: '/sablony'
+      fullPath: '/sablony'
+      preLoaderRoute: typeof SablonyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sandbox': {
+      id: '/sandbox'
+      path: '/sandbox'
+      fullPath: '/sandbox'
+      preLoaderRoute: typeof SandboxRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +198,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzatorRoute: AnalyzatorRoute,
+  HistoriaRoute: HistoriaRoute,
   KriteriaRoute: KriteriaRoute,
+  NastaveniaRoute: NastaveniaRoute,
+  PomocRoute: PomocRoute,
+  SablonyRoute: SablonyRoute,
+  SandboxRoute: SandboxRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
