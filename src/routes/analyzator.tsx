@@ -1,0 +1,222 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Save, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { toast } from "sonner";
+import { AppShell } from "@/components/AppShell";
+import { CriteriaBars, ScoreRing } from "@/components/ScoreVisuals";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { CRITERIA, analyzePrompt, improvePrompt } from "@/lib/criteria";
+import { diffLines } from "@/lib/diff";
+import { exportAnalysisPdf } from "@/lib/export";
+import { DRAFT_KEY, saveEntry } from "@/lib/storage";
+
+export const Route = createFileRoute("/analyzator")({
+  head: () => ({
+    meta: [
+      { title: "Analyzátor promptov — Auditor Promptov pre PWA" },
+      {
+        name: "description",
+        content:
+          "Vlož prompt, získaj skóre podľa 7 kritérií, checklisty, vylepšenú verziu a diff porovnanie.",
+      },
+      { property: "og:title", content: "Analyzátor promptov pre PWA" },
+      {
+        property: "og:description",
+        content: "Okamžité bodovanie promptu, konkrétne návrhy a export reportu do PDF.",
+      },
+    ],
+  }),
+  component: Analyzer,
+});
+
+function Analyzer() {
+  const [title, setTitle] = useState("");
+  const [prompt, setPrompt] = useState("");
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) setPrompt(draft);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, prompt);
+  }, [prompt]);
+
+  const result = useMemo(() => analyzePrompt(prompt), [prompt]);
+  const improved = useMemo(
+    () => (prompt.trim() ? improvePrompt(prompt, result) : ""),
+    [prompt, result],
+  );
+  const diff = useMemo(
+    () => (improved ? diffLines(prompt, improved) : []),
+    [prompt, improved],
+  );
+
+  return (
+    <AppShell title="Analyzátor" subtitle="Editor promptu s automatickým hodnotením v reálnom čase">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <div className="surface-card p-5">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Názov promptu (napr. Fitness tracker PWA)"
+            className="mb-3"
+          />
+          <Textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Vlož alebo napíš svoj prompt pre PWA aplikáciu…"
+            className="min-h-[280px] font-mono text-sm"
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">{result.words} slov</Badge>
+            <Badge variant="secondary">{result.chars} znakov</Badge>
+            <div className="ml-auto flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setPrompt("");
+                  toast.info("Editor vyčistený");
+                }}
+              >
+                <Trash2 className="mr-1 h-4 w-4" /> Vyčistiť
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={!prompt.trim()}
+                onClick={() => {
+                  setPrompt(improved);
+                  toast.success("Prompt vylepšený návrhmi");
+                }}
+              >
+                <Wand2 className="mr-1 h-4 w-4" /> Vylepšiť
+              </Button>
+              <Button
+                size="sm"
+                disabled={!prompt.trim()}
+                onClick={() => {
+                  saveEntry(title, prompt, result);
+                  toast.success("Audit uložený do histórie");
+                }}
+              >
+                <Save className="mr-1 h-4 w-4" /> Uložiť audit
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="surface-card flex flex-col items-center gap-4 p-5">
+          <ScoreRing value={result.total} grade={result.grade} />
+          <div className="w-full">
+            <CriteriaBars result={result} />
+          </div>
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={!prompt.trim()}
+            onClick={() => exportAnalysisPdf(title, prompt, result)}
+          >
+            <Download className="mr-1 h-4 w-4" /> Export PDF reportu
+          </Button>
+        </div>
+      </div>
+
+      <Tabs defaultValue="checklist" className="mt-6">
+        <TabsList className="flex w-full flex-wrap justify-start">
+          <TabsTrigger value="checklist">Checklisty</TabsTrigger>
+          <TabsTrigger value="suggestions">Návrhy</TabsTrigger>
+          <TabsTrigger value="diff">Diff viewer</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="checklist" className="mt-4 grid gap-4 md:grid-cols-2">
+          {result.scores.map((s) => {
+            const c = CRITERIA.find((x) => x.id === s.id)!;
+            return (
+              <div key={s.id} className="surface-card p-5">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <h3 className="min-w-0 truncate text-sm font-semibold">{c.name}</h3>
+                  <Badge variant={s.score >= 80 ? "default" : "secondary"}>{s.score}/100</Badge>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  {c.checklist.map((item, i) => {
+                    const done = i < s.matched.length && s.score >= 40;
+                    return (
+                      <li key={item} className="flex gap-2">
+                        <span
+                          className={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-sm border text-[10px] ${
+                            done
+                              ? "border-success bg-success text-success-foreground"
+                              : "border-border text-transparent"
+                          }`}
+                          aria-hidden
+                        >
+                          ✓
+                        </span>
+                        <span className={done ? "text-muted-foreground" : ""}>{item}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
+        </TabsContent>
+
+        <TabsContent value="suggestions" className="mt-4">
+          <div className="surface-card p-5">
+            {prompt.trim() ? (
+              <ul className="space-y-3 text-sm">
+                {result.suggestions.map((s) => (
+                  <li key={s} className="flex gap-3">
+                    <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Zadaj prompt a zobrazia sa konkrétne návrhy na zlepšenie.
+              </p>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="diff" className="mt-4">
+          <div className="surface-card overflow-x-auto p-5">
+            {diff.length ? (
+              <pre className="min-w-full font-mono text-xs leading-relaxed">
+                {diff.map((line, i) => (
+                  <div
+                    key={i}
+                    className={
+                      line.type === "add"
+                        ? "bg-success/15 text-foreground"
+                        : line.type === "remove"
+                          ? "bg-destructive/10 text-muted-foreground line-through"
+                          : ""
+                    }
+                  >
+                    <span className="select-none text-muted-foreground">
+                      {line.type === "add" ? "+ " : line.type === "remove" ? "- " : "  "}
+                    </span>
+                    {line.text || " "}
+                  </div>
+                ))}
+              </pre>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Diff sa zobrazí po zadaní promptu — porovná originál s vylepšenou verziou.
+              </p>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </AppShell>
+  );
+}
