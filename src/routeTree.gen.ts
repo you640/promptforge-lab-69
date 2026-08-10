@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyzatorRouteImport } from './routes/analyzator'
+import { Route as KriteriaRouteImport } from './routes/kriteria'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const AnalyzatorRoute = AnalyzatorRouteImport.update({
   path: '/analyzator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KriteriaRoute = KriteriaRouteImport.update({
+  id: '/kriteria',
+  path: '/kriteria',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/kriteria': typeof KriteriaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/kriteria': typeof KriteriaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/kriteria': typeof KriteriaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyzator'
+  fullPaths: '/' | '/analyzator' | '/kriteria'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyzator'
-  id: '__root__' | '/' | '/analyzator'
+  to: '/' | '/analyzator' | '/kriteria'
+  id: '__root__' | '/' | '/analyzator' | '/kriteria'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzatorRoute: typeof AnalyzatorRoute
+  KriteriaRoute: typeof KriteriaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyzatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kriteria': {
+      id: '/kriteria'
+      path: '/kriteria'
+      fullPath: '/kriteria'
+      preLoaderRoute: typeof KriteriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzatorRoute: AnalyzatorRoute,
+  KriteriaRoute: KriteriaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
