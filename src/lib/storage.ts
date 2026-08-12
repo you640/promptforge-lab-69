@@ -80,3 +80,18 @@ export function saveSettings(s: Settings) {
 }
 
 export const DRAFT_KEY = "apw.draft.v1";
+
+const LH_KEY = "apw.lighthouse.v1";
+
+export function saveLighthouseAudits<T>(audits: T[]) {
+  if (isBrowser()) localStorage.setItem(LH_KEY, JSON.stringify(audits));
+}
+
+export function loadLighthouseAudits<T>(): T[] {
+  if (!isBrowser()) return [];
+  try {
+    return JSON.parse(localStorage.getItem(LH_KEY) ?? "[]") as T[];
+  } catch {
+    return [];
+  }
+}
