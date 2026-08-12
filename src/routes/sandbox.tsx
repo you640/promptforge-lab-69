@@ -109,7 +109,7 @@ function Sandbox() {
         </h3>
         <p className="mb-4 text-xs text-muted-foreground">
           Zadaj verejnú URL nasadenej PWA. Audit vyžaduje internet a výsledok sa automaticky zobrazí
-          aj v Analyzátore.
+          aj v Analyzátore. Bez vlastného PageSpeed API kľúča platí denný limit Google kvóty.
         </p>
         <div className="flex flex-wrap gap-2">
           <Input
