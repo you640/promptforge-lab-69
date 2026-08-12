@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { CRITERIA, analyzePrompt, improvePrompt } from "@/lib/criteria";
 import { diffLines } from "@/lib/diff";
 import { exportAnalysisPdf } from "@/lib/export";
-import { DRAFT_KEY, saveEntry } from "@/lib/storage";
+import { DRAFT_KEY, loadLighthouseAudits, saveEntry } from "@/lib/storage";
+import type { LighthouseAudit } from "@/lib/lighthouse.functions";
 
 export const Route = createFileRoute("/analyzator")({
   head: () => ({
