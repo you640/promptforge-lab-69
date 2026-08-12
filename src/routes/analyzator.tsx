@@ -136,7 +136,52 @@ function Analyzer() {
           <TabsTrigger value="checklist">Checklisty</TabsTrigger>
           <TabsTrigger value="suggestions">Návrhy</TabsTrigger>
           <TabsTrigger value="diff">Diff viewer</TabsTrigger>
+          <TabsTrigger value="lighthouse">Lighthouse</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="lighthouse" className="mt-4">
+          <div className="surface-card p-5">
+            {audits.length ? (
+              <div className="space-y-5">
+                {audits.map((a) => (
+                  <div key={`${a.url}-${a.fetchedAt}`} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span className="min-w-0 truncate text-sm font-semibold">{a.finalUrl}</span>
+                      <Badge variant="secondary">{a.strategy}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(a.fetchedAt).toLocaleString("sk-SK")}
+                      </span>
+                    </div>
+                    <div className="grid gap-2 text-sm sm:grid-cols-2">
+                      <ul className="space-y-1">
+                        {Object.entries(a.categories).map(([k, v]) => (
+                          <li key={k} className="flex items-center justify-between gap-3">
+                            <span className="capitalize text-muted-foreground">{k}</span>
+                            <span className="font-semibold tabular-nums">{v ?? "—"}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <ul className="space-y-1">
+                        {a.metrics.map((m) => (
+                          <li key={m.id} className="flex items-center justify-between gap-3">
+                            <span className="min-w-0 truncate text-muted-foreground">{m.title}</span>
+                            <span className="font-semibold tabular-nums">{m.display}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Zatiaľ žiadny reálny Lighthouse audit — spusti ho v sekcii Testovací sandbox a
+                výsledky sa zobrazia tu.
+              </p>
+            )}
+          </div>
+        </TabsContent>
+
 
         <TabsContent value="checklist" className="mt-4 grid gap-4 md:grid-cols-2">
           {result.scores.map((s) => {
