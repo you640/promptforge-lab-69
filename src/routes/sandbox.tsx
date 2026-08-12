@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Gauge, Play } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Gauge, Loader2, Play, Radar } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { analyzePrompt } from "@/lib/criteria";
+import { runLighthouseAudit, type LighthouseAudit } from "@/lib/lighthouse.functions";
+import { loadLighthouseAudits, saveLighthouseAudits } from "@/lib/storage";
 
 export const Route = createFileRoute("/sandbox")({
   head: () => ({
@@ -14,12 +19,12 @@ export const Route = createFileRoute("/sandbox")({
       {
         name: "description",
         content:
-          "Offline sandbox na porovnanie dvoch verzií promptu a simulovaný Lighthouse odhad pripravenosti PWA.",
+          "Sandbox na porovnanie dvoch verzií promptu a reálny Lighthouse audit výkonu cez PageSpeed Insights.",
       },
-      { property: "og:title", content: "Offline sandbox pre PWA prompty" },
+      { property: "og:title", content: "Sandbox s reálnym Lighthouse auditom" },
       {
         property: "og:description",
-        content: "A/B porovnaj verzie promptu a odhadni Lighthouse pripravenosť.",
+        content: "A/B porovnaj verzie promptu a spusti reálny Lighthouse audit nasadenej PWA.",
       },
     ],
   }),
@@ -30,9 +35,30 @@ function Sandbox() {
   const [a, setA] = useState("");
   const [b, setB] = useState("");
   const [ran, setRan] = useState(false);
+  const [url, setUrl] = useState("");
+  const [strategy, setStrategy] = useState<"mobile" | "desktop">("mobile");
+  const [loading, setLoading] = useState(false);
+  const [audit, setAudit] = useState<LighthouseAudit | null>(null);
+  const auditFn = useServerFn(runLighthouseAudit);
+
+  const runAudit = async () => {
+    setLoading(true);
+    try {
+      const res = await auditFn({ data: { url: url.trim(), strategy } });
+      setAudit(res);
+      const prev = loadLighthouseAudits<LighthouseAudit>();
+      saveLighthouseAudits([res, ...prev].slice(0, 10));
+      toast.success("Lighthouse audit dokončený");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Audit sa nepodarilo spustiť");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const ra = useMemo(() => analyzePrompt(a), [a]);
   const rb = useMemo(() => analyzePrompt(b), [b]);
+
 
   const lighthouse = (score: number) => ({
     performance: Math.min(100, Math.round(score * 0.9 + 8)),
