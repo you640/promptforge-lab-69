@@ -36,15 +36,18 @@ export const Route = createFileRoute("/analyzator")({
 function Analyzer() {
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
+  const [audits, setAudits] = useState<LighthouseAudit[]>([]);
 
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_KEY);
     if (draft) setPrompt(draft);
+    setAudits(loadLighthouseAudits<LighthouseAudit>());
   }, []);
 
   useEffect(() => {
     localStorage.setItem(DRAFT_KEY, prompt);
   }, [prompt]);
+
 
   const result = useMemo(() => analyzePrompt(prompt), [prompt]);
   const improved = useMemo(
