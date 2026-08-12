@@ -99,9 +99,75 @@ function Sandbox() {
           <Play className="mr-1 h-4 w-4" /> Spustiť test
         </Button>
         <p className="text-xs text-muted-foreground">
-          Beží úplne lokálne v prehliadači — funguje aj bez internetu.
+          Porovnanie promptov beží lokálne v prehliadači — funguje aj bez internetu.
         </p>
       </div>
+
+      <div className="surface-card mt-6 p-5">
+        <h3 className="mb-1 flex items-center gap-2 font-semibold">
+          <Radar className="h-4 w-4 text-accent" /> Reálny Lighthouse audit (PageSpeed Insights)
+        </h3>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Zadaj verejnú URL nasadenej PWA. Audit vyžaduje internet a výsledok sa automaticky zobrazí
+          aj v Analyzátore.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://moja-pwa.lovable.app"
+            className="min-w-[220px] flex-1"
+            inputMode="url"
+          />
+          <div className="flex gap-2">
+            {(["mobile", "desktop"] as const).map((s) => (
+              <Button
+                key={s}
+                type="button"
+                size="sm"
+                variant={strategy === s ? "default" : "outline"}
+                onClick={() => setStrategy(s)}
+              >
+                {s === "mobile" ? "Mobil" : "Desktop"}
+              </Button>
+            ))}
+            <Button onClick={runAudit} disabled={loading || !/^https?:\/\/.+/.test(url.trim())}>
+              {loading ? (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              ) : (
+                <Gauge className="mr-1 h-4 w-4" />
+              )}
+              {loading ? "Audit beží…" : "Spustiť audit"}
+            </Button>
+          </div>
+        </div>
+
+        {audit && (
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <ul className="space-y-2 text-sm">
+              {Object.entries(audit.categories).map(([k, v]) => (
+                <li key={k} className="flex items-center justify-between gap-3">
+                  <span className="capitalize text-muted-foreground">{k}</span>
+                  <span className="font-semibold tabular-nums">{v ?? "—"}</span>
+                </li>
+              ))}
+            </ul>
+            <ul className="space-y-2 text-sm">
+              {audit.metrics.map((m) => (
+                <li key={m.id} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-muted-foreground">{m.title}</span>
+                  <span className="font-semibold tabular-nums">{m.display}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              {audit.finalUrl} · {audit.strategy} ·{" "}
+              {new Date(audit.fetchedAt).toLocaleString("sk-SK")}
+            </p>
+          </div>
+        )}
+      </div>
+
 
       {ran && (
         <div className="mt-6 grid gap-4 md:grid-cols-2">
