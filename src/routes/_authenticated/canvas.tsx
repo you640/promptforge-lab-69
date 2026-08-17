@@ -344,6 +344,28 @@ function CanvasPage() {
           ))}
         </select>
 
+        {projectId && loadState && loadState !== "ready" && (
+          <Badge
+            variant="secondary"
+            className="gap-1.5"
+            aria-live="polite"
+            title={
+              loadState === "cache"
+                ? "Načítavam súbory z lokálnej cache (IndexedDB)"
+                : "Synchronizujem najnovšiu verziu z cloudu"
+            }
+          >
+            <Loader2 className="h-3 w-3 animate-spin" />
+            {loadState === "cache" ? "Načítavam z cache…" : "Synchronizujem cloud…"}
+          </Badge>
+        )}
+        {projectId && loadState === "ready" && (
+          <Badge variant="outline" className="gap-1.5 text-muted-foreground" aria-live="polite">
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
+            Pripravené
+          </Badge>
+        )}
+
         {projectId && (
           <>
             <Button
