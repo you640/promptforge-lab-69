@@ -308,7 +308,12 @@ function CanvasPage() {
 
         <select
           value={projectId ?? ""}
-          onChange={(e) => setProjectId(e.target.value || null)}
+          onChange={(e) => {
+            const next = e.target.value || null;
+            if (!next) rememberLastProject(null);
+            setProjectId(next);
+          }}
+
           className="h-9 min-w-[200px] rounded-md border border-input bg-background px-3 text-sm"
           aria-label="Vybrať projekt"
         >
