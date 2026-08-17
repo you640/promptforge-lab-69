@@ -14,7 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      canvas_files: {
+        Row: {
+          content: string
+          id: string
+          path: string
+          project_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          id?: string
+          path: string
+          project_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          path?: string
+          project_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canvas_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "canvas_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canvas_projects: {
+        Row: {
+          created_at: string
+          file_count: number
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_count?: number
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_count?: number
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      canvas_prompt_runs: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          project_id: string
+          prompt: string
+          result: Json
+          user_id: string
+          version_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          project_id: string
+          prompt: string
+          result?: Json
+          user_id: string
+          version_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          project_id?: string
+          prompt?: string
+          result?: Json
+          user_id?: string
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canvas_prompt_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "canvas_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canvas_prompt_runs_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "canvas_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canvas_versions: {
+        Row: {
+          audit_score: number | null
+          created_at: string
+          files: Json
+          id: string
+          project_id: string
+          prompt: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          audit_score?: number | null
+          created_at?: string
+          files?: Json
+          id?: string
+          project_id: string
+          prompt?: string
+          user_id: string
+          version: number
+        }
+        Update: {
+          audit_score?: number | null
+          created_at?: string
+          files?: Json
+          id?: string
+          project_id?: string
+          prompt?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canvas_versions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "canvas_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
