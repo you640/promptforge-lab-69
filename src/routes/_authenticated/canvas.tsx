@@ -102,23 +102,48 @@ function CanvasPage() {
   // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
   useEffect(() => {
     prewarmSandpack();
+    const last = loadLastProject();
+    if (last) setProjectId(last);
   }, []);
 
   const projects = useQuery({ queryKey: ["canvas-projects"], queryFn: () => listFn({}) });
 
+  const applyFiles = (list: CanvasFile[]) => {
+    setFiles(list);
+    setActivePath((prev) =>
+      prev && list.some((f) => f.path === prev) ? prev : (list[0]?.path ?? null),
+    );
+    setContextPaths((prev) => {
+      const kept = prev.filter((p) => list.some((f) => f.path === p));
+      return kept.length > 0 ? kept : list.slice(0, 4).map((f) => f.path);
+    });
+    setDirty([]);
+  };
+
+  // Okamžité vykreslenie z IndexedDB cache; cloud dobehne na pozadí.
+  useEffect(() => {
+    if (!projectId) return;
+    let stale = false;
+    rememberLastProject(projectId);
+    void readCachedProject(projectId).then((cached) => {
+      if (!stale && cached && cached.files.length > 0) applyFiles(cached.files);
+    });
+    return () => {
+      stale = true;
+    };
+  }, [projectId]);
 
   const detail = useQuery({
     queryKey: ["canvas-project", projectId],
     enabled: !!projectId,
     queryFn: async () => {
       const res = await getFn({ data: { projectId: projectId! } });
-      setFiles(res.files);
-      setActivePath(res.files[0]?.path ?? null);
-      setContextPaths(res.files.slice(0, 4).map((f) => f.path));
-      setDirty([]);
+      applyFiles(res.files);
+      void cacheProjectFiles(projectId!, res.project.name, res.files);
       return res;
     },
   });
+
 
   const versions = (detail.data?.versions ?? []) as unknown as CanvasVersion[];
   const activeFile = files.find((f) => f.path === activePath) ?? null;
