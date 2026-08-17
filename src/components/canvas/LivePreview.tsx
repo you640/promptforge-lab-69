@@ -77,7 +77,8 @@ export default function LivePreview({ files }: { files: CanvasFile[] }) {
           ...(picked.entry ? { entry: `/${picked.entry}` } : {}),
         }}
         theme="auto"
-        options={{ externalResources: [] }}
+        options={{ externalResources: [], bundlerURL: SANDPACK_BUNDLER_URL }}
+
       >
         <SandpackPreview
           showOpenInCodeSandbox={false}
