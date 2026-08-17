@@ -80,7 +80,7 @@ export default function LivePreview({ files }: { files: CanvasFile[] }) {
           showTabs: false,
           showLineNumbers: false,
           showNavigator: false,
-          editorHeight: 0,
+          editorHeight: 480,
           layout: "preview",
           externalResources: [],
         }}
