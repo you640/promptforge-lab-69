@@ -91,7 +91,13 @@ function CanvasPage() {
   const [aiSummary, setAiSummary] = useState("");
   const [importing, setImporting] = useState(false);
 
+  // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
+  useEffect(() => {
+    prewarmSandpack();
+  }, []);
+
   const projects = useQuery({ queryKey: ["canvas-projects"], queryFn: () => listFn({}) });
+
 
   const detail = useQuery({
     queryKey: ["canvas-project", projectId],
