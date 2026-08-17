@@ -1,5 +1,6 @@
 import { SandpackPreview, SandpackProvider } from "@codesandbox/sandpack-react";
 import type { CanvasFile } from "@/lib/canvas-types";
+import { SANDPACK_BUNDLER_URL } from "@/lib/sandpack-prewarm";
 
 type Template = "react-ts" | "static" | "vanilla";
 
