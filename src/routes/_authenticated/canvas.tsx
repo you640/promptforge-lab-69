@@ -99,6 +99,9 @@ function CanvasPage() {
   const [aiSummary, setAiSummary] = useState("");
   const [importing, setImporting] = useState(false);
 
+  // Stav načítavania: "cache" (čítame IndexedDB), "cloud" (synchronizujeme z cloudu), "ready" | null
+  const [loadState, setLoadState] = useState<"cache" | "cloud" | "ready" | null>(null);
+
   // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
   useEffect(() => {
     prewarmSandpack();
