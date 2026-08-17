@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AnalyzatorRouteImport } from './routes/analyzator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as HistoriaRouteImport } from './routes/historia'
@@ -18,10 +19,15 @@ import { Route as NastaveniaRouteImport } from './routes/nastavenia'
 import { Route as PomocRouteImport } from './routes/pomoc'
 import { Route as SablonyRouteImport } from './routes/sablony'
 import { Route as SandboxRouteImport } from './routes/sandbox'
+import { Route as AuthenticatedCanvasRouteImport } from './routes/_authenticated/canvas'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyzatorRoute = AnalyzatorRouteImport.update({
@@ -64,6 +70,11 @@ const SandboxRoute = SandboxRouteImport.update({
   path: '/sandbox',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCanvasRoute = AuthenticatedCanvasRouteImport.update({
+  id: '/canvas',
+  path: '/canvas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/pomoc': typeof PomocRoute
   '/sablony': typeof SablonyRoute
   '/sandbox': typeof SandboxRoute
+  '/canvas': typeof AuthenticatedCanvasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,10 +98,12 @@ export interface FileRoutesByTo {
   '/pomoc': typeof PomocRoute
   '/sablony': typeof SablonyRoute
   '/sandbox': typeof SandboxRoute
+  '/canvas': typeof AuthenticatedCanvasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/analyzator': typeof AnalyzatorRoute
   '/auth': typeof AuthRoute
   '/historia': typeof HistoriaRoute
@@ -98,6 +112,7 @@ export interface FileRoutesById {
   '/pomoc': typeof PomocRoute
   '/sablony': typeof SablonyRoute
   '/sandbox': typeof SandboxRoute
+  '/_authenticated/canvas': typeof AuthenticatedCanvasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +126,7 @@ export interface FileRouteTypes {
     | '/pomoc'
     | '/sablony'
     | '/sandbox'
+    | '/canvas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,9 +138,11 @@ export interface FileRouteTypes {
     | '/pomoc'
     | '/sablony'
     | '/sandbox'
+    | '/canvas'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/analyzator'
     | '/auth'
     | '/historia'
@@ -133,10 +151,12 @@ export interface FileRouteTypes {
     | '/pomoc'
     | '/sablony'
     | '/sandbox'
+    | '/_authenticated/canvas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AnalyzatorRoute: typeof AnalyzatorRoute
   AuthRoute: typeof AuthRoute
   HistoriaRoute: typeof HistoriaRoute
@@ -154,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analyzator': {
@@ -212,11 +239,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SandboxRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/canvas': {
+      id: '/_authenticated/canvas'
+      path: '/canvas'
+      fullPath: '/canvas'
+      preLoaderRoute: typeof AuthenticatedCanvasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCanvasRoute: typeof AuthenticatedCanvasRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCanvasRoute: AuthenticatedCanvasRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AnalyzatorRoute: AnalyzatorRoute,
   AuthRoute: AuthRoute,
   HistoriaRoute: HistoriaRoute,
