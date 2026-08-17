@@ -128,8 +128,17 @@ function CanvasPage() {
     if (!projectId) return;
     let stale = false;
     rememberLastProject(projectId);
+    setLoadState("cache");
     void readCachedProject(projectId).then((cached) => {
-      if (!stale && cached && cached.files.length > 0) applyFiles(cached.files);
+      if (stale) return;
+      if (cached && cached.files.length > 0) {
+        applyFiles(cached.files);
+        // Cache okamžite zobrazená; čakáme na synchronizáciu z cloudu.
+        setLoadState("cloud");
+      } else {
+        // Žiadna cache — načítavame priamo z cloudu.
+        setLoadState("cloud");
+      }
     });
     return () => {
       stale = true;
@@ -146,6 +155,13 @@ function CanvasPage() {
       return res;
     },
   });
+
+  // Keď cloud dobehne, označme stav ako pripravený.
+  useEffect(() => {
+    if (projectId && loadState === "cloud" && !detail.isFetching) {
+      setLoadState("ready");
+    }
+  }, [projectId, loadState, detail.isFetching]);
 
 
   const versions = (detail.data?.versions ?? []) as unknown as CanvasVersion[];
