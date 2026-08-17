@@ -42,6 +42,14 @@ import {
 } from "@/lib/canvas.functions";
 import { proposeCanvasChanges } from "@/lib/canvas-ai.functions";
 import { prewarmSandpack } from "@/lib/sandpack-prewarm";
+import {
+  cacheProjectFiles,
+  dropCachedProject,
+  loadLastProject,
+  readCachedProject,
+  rememberLastProject,
+} from "@/lib/canvas-cache";
+
 
 const LivePreview = lazy(() => import("@/components/canvas/LivePreview"));
 
@@ -94,23 +102,48 @@ function CanvasPage() {
   // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
   useEffect(() => {
     prewarmSandpack();
+    const last = loadLastProject();
+    if (last) setProjectId(last);
   }, []);
 
   const projects = useQuery({ queryKey: ["canvas-projects"], queryFn: () => listFn({}) });
 
+  const applyFiles = (list: CanvasFile[]) => {
+    setFiles(list);
+    setActivePath((prev) =>
+      prev && list.some((f) => f.path === prev) ? prev : (list[0]?.path ?? null),
+    );
+    setContextPaths((prev) => {
+      const kept = prev.filter((p) => list.some((f) => f.path === p));
+      return kept.length > 0 ? kept : list.slice(0, 4).map((f) => f.path);
+    });
+    setDirty([]);
+  };
+
+  // Okamžité vykreslenie z IndexedDB cache; cloud dobehne na pozadí.
+  useEffect(() => {
+    if (!projectId) return;
+    let stale = false;
+    rememberLastProject(projectId);
+    void readCachedProject(projectId).then((cached) => {
+      if (!stale && cached && cached.files.length > 0) applyFiles(cached.files);
+    });
+    return () => {
+      stale = true;
+    };
+  }, [projectId]);
 
   const detail = useQuery({
     queryKey: ["canvas-project", projectId],
     enabled: !!projectId,
     queryFn: async () => {
       const res = await getFn({ data: { projectId: projectId! } });
-      setFiles(res.files);
-      setActivePath(res.files[0]?.path ?? null);
-      setContextPaths(res.files.slice(0, 4).map((f) => f.path));
-      setDirty([]);
+      applyFiles(res.files);
+      void cacheProjectFiles(projectId!, res.project.name, res.files);
       return res;
     },
   });
+
 
   const versions = (detail.data?.versions ?? []) as unknown as CanvasVersion[];
   const activeFile = files.find((f) => f.path === activePath) ?? null;
@@ -132,6 +165,8 @@ function CanvasPage() {
       const project = await createFn({
         data: { name: file.name.replace(/\.zip$/i, ""), files: imported },
       });
+      // Rozbalené súbory držíme lokálne, aby ďalšie otvorenie nemuselo znova rozbaľovať ZIP.
+      await cacheProjectFiles(project.id, project.name ?? "canvas", imported);
       await queryClient.invalidateQueries({ queryKey: ["canvas-projects"] });
       setProjectId(project.id);
       toast.success(
@@ -159,8 +194,10 @@ function CanvasPage() {
     },
     onSuccess: () => {
       setDirty((prev) => prev.filter((p) => p !== activePath));
+      if (projectId) void cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", files);
       toast.success("Súbor uložený");
     },
+
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Uloženie sa nepodarilo"),
   });
@@ -212,6 +249,7 @@ function CanvasPage() {
       setFiles(next);
       setChanges([]);
       setDirty([]);
+      if (projectId) await cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", next);
       await queryClient.invalidateQueries({ queryKey: ["canvas-project", projectId] });
       toast.success("Zmeny prijaté a uložené ako nová verzia");
     },
@@ -233,9 +271,12 @@ function CanvasPage() {
     },
     onSuccess: async (restored) => {
       setFiles(restored);
+      if (projectId)
+        await cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", restored);
       await queryClient.invalidateQueries({ queryKey: ["canvas-project", projectId] });
       toast.success("Verzia obnovená");
     },
+
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Obnova zlyhala"),
   });
 
@@ -267,7 +308,12 @@ function CanvasPage() {
 
         <select
           value={projectId ?? ""}
-          onChange={(e) => setProjectId(e.target.value || null)}
+          onChange={(e) => {
+            const next = e.target.value || null;
+            if (!next) rememberLastProject(null);
+            setProjectId(next);
+          }}
+
           className="h-9 min-w-[200px] rounded-md border border-input bg-background px-3 text-sm"
           aria-label="Vybrať projekt"
         >
@@ -291,11 +337,14 @@ function CanvasPage() {
               variant="ghost"
               onClick={async () => {
                 await deleteFn({ data: { projectId } });
+                await dropCachedProject(projectId);
+                rememberLastProject(null);
                 setProjectId(null);
                 setFiles([]);
                 await queryClient.invalidateQueries({ queryKey: ["canvas-projects"] });
                 toast.success("Projekt zmazaný");
               }}
+
             >
               <Trash2 className="mr-1 h-4 w-4" /> Zmazať
             </Button>
