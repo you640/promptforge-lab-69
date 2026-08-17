@@ -332,11 +332,14 @@ function CanvasPage() {
               variant="ghost"
               onClick={async () => {
                 await deleteFn({ data: { projectId } });
+                await dropCachedProject(projectId);
+                rememberLastProject(null);
                 setProjectId(null);
                 setFiles([]);
                 await queryClient.invalidateQueries({ queryKey: ["canvas-projects"] });
                 toast.success("Projekt zmazaný");
               }}
+
             >
               <Trash2 className="mr-1 h-4 w-4" /> Zmazať
             </Button>
