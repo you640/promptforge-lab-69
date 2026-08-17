@@ -68,7 +68,7 @@ export default function LivePreview({ files }: { files: CanvasFile[] }) {
   return (
     <div>
       <p className="mb-2 text-xs text-muted-foreground">Režim náhľadu: {picked.reason}</p>
-      <Sandpack
+      <SandpackProvider
         key={picked.template + (picked.entry ?? "")}
         template={picked.template}
         files={sandpackFiles}
@@ -76,16 +76,16 @@ export default function LivePreview({ files }: { files: CanvasFile[] }) {
           dependencies: dependencies(files),
           ...(picked.entry ? { entry: `/${picked.entry}` } : {}),
         }}
-        options={{
-          showTabs: false,
-          showLineNumbers: false,
-          showNavigator: false,
-          editorHeight: 480,
-          layout: "preview",
-          externalResources: [],
-        }}
         theme="auto"
-      />
+        options={{ externalResources: [] }}
+      >
+        <SandpackPreview
+          showOpenInCodeSandbox={false}
+          showRefreshButton
+          style={{ height: 480, borderRadius: 12 }}
+        />
+      </SandpackProvider>
     </div>
   );
 }
+
