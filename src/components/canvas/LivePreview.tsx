@@ -43,6 +43,27 @@ export default function LivePreview({ files }: { files: CanvasFile[] }) {
   const sandpackFiles: Record<string, string> = {};
   for (const f of files) sandpackFiles[`/${f.path}`] = f.content;
 
+  // Sandpack potrebuje v package.json spúšťací skript, inak náhľad nenaštartuje.
+  const pkgFile = sandpackFiles["/package.json"];
+  if (pkgFile) {
+    let parsed: Record<string, unknown> = {};
+    try {
+      parsed = JSON.parse(pkgFile) as Record<string, unknown>;
+    } catch {
+      parsed = {};
+    }
+    const scripts = (parsed["scripts"] as Record<string, string> | undefined) ?? {};
+    parsed["name"] = typeof parsed["name"] === "string" ? parsed["name"] : "canvas-preview";
+    parsed["scripts"] = {
+      ...scripts,
+      dev: scripts["dev"] ?? "vite",
+      start: scripts["start"] ?? scripts["dev"] ?? "vite",
+      build: scripts["build"] ?? "vite build",
+    };
+    sandpackFiles["/package.json"] = JSON.stringify(parsed, null, 2);
+  }
+
+
   return (
     <div>
       <p className="mb-2 text-xs text-muted-foreground">Režim náhľadu: {picked.reason}</p>
