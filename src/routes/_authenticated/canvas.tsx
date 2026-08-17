@@ -360,7 +360,9 @@ function CanvasPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="preview">
+              {/* forceMount: iframe s bundlerom zostáva nažive, takže prepnutie
+                  na náhľad je okamžité namiesto nového buildu. */}
+              <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden">
                 <div className="surface-card p-4">
                   <ClientOnly
                     fallback={
@@ -381,6 +383,7 @@ function CanvasPage() {
                   </ClientOnly>
                 </div>
               </TabsContent>
+
 
               <TabsContent value="prompt">
                 <div className="surface-card p-4">
