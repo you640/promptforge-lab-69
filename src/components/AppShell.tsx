@@ -6,6 +6,7 @@ import {
   ListChecks,
   Library,
   FlaskConical,
+  Boxes,
   History,
   Settings,
   GraduationCap,
