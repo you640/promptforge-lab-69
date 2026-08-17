@@ -165,6 +165,8 @@ function CanvasPage() {
       const project = await createFn({
         data: { name: file.name.replace(/\.zip$/i, ""), files: imported },
       });
+      // Rozbalené súbory držíme lokálne, aby ďalšie otvorenie nemuselo znova rozbaľovať ZIP.
+      await cacheProjectFiles(project.id, project.name ?? "canvas", imported);
       await queryClient.invalidateQueries({ queryKey: ["canvas-projects"] });
       setProjectId(project.id);
       toast.success(
@@ -192,8 +194,10 @@ function CanvasPage() {
     },
     onSuccess: () => {
       setDirty((prev) => prev.filter((p) => p !== activePath));
+      if (projectId) void cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", files);
       toast.success("Súbor uložený");
     },
+
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Uloženie sa nepodarilo"),
   });
