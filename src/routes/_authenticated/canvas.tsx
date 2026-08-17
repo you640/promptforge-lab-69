@@ -99,6 +99,9 @@ function CanvasPage() {
   const [aiSummary, setAiSummary] = useState("");
   const [importing, setImporting] = useState(false);
 
+  // Stav načítavania: "cache" (čítame IndexedDB), "cloud" (synchronizujeme z cloudu), "ready" | null
+  const [loadState, setLoadState] = useState<"cache" | "cloud" | "ready" | null>(null);
+
   // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
   useEffect(() => {
     prewarmSandpack();
@@ -125,8 +128,17 @@ function CanvasPage() {
     if (!projectId) return;
     let stale = false;
     rememberLastProject(projectId);
+    setLoadState("cache");
     void readCachedProject(projectId).then((cached) => {
-      if (!stale && cached && cached.files.length > 0) applyFiles(cached.files);
+      if (stale) return;
+      if (cached && cached.files.length > 0) {
+        applyFiles(cached.files);
+        // Cache okamžite zobrazená; čakáme na synchronizáciu z cloudu.
+        setLoadState("cloud");
+      } else {
+        // Žiadna cache — načítavame priamo z cloudu.
+        setLoadState("cloud");
+      }
     });
     return () => {
       stale = true;
@@ -143,6 +155,13 @@ function CanvasPage() {
       return res;
     },
   });
+
+  // Keď cloud dobehne, označme stav ako pripravený.
+  useEffect(() => {
+    if (projectId && loadState === "cloud" && !detail.isFetching) {
+      setLoadState("ready");
+    }
+  }, [projectId, loadState, detail.isFetching]);
 
 
   const versions = (detail.data?.versions ?? []) as unknown as CanvasVersion[];
@@ -324,6 +343,28 @@ function CanvasPage() {
             </option>
           ))}
         </select>
+
+        {projectId && loadState && loadState !== "ready" && (
+          <Badge
+            variant="secondary"
+            className="gap-1.5"
+            aria-live="polite"
+            title={
+              loadState === "cache"
+                ? "Načítavam súbory z lokálnej cache (IndexedDB)"
+                : "Synchronizujem najnovšiu verziu z cloudu"
+            }
+          >
+            <Loader2 className="h-3 w-3 animate-spin" />
+            {loadState === "cache" ? "Načítavam z cache…" : "Synchronizujem cloud…"}
+          </Badge>
+        )}
+        {projectId && loadState === "ready" && (
+          <Badge variant="outline" className="gap-1.5 text-muted-foreground" aria-live="polite">
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
+            Pripravené
+          </Badge>
+        )}
 
         {projectId && (
           <>
