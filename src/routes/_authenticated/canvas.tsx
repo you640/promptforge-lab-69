@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileTree } from "@/components/canvas/FileTree";
 import { DiffView } from "@/components/canvas/DiffView";
-import { analyzePrompt, type AnalysisResult } from "@/lib/criteria";
+import { analyzePrompt, CRITERIA, type AnalysisResult } from "@/lib/criteria";
 import { exportZip, importZip } from "@/lib/canvas-zip";
 import {
   AI_CONTEXT_CHARS,
@@ -105,7 +105,7 @@ function CanvasPage() {
     },
   });
 
-  const versions = (detail.data?.versions ?? []) as CanvasVersion[];
+  const versions = (detail.data?.versions ?? []) as unknown as CanvasVersion[];
   const activeFile = files.find((f) => f.path === activePath) ?? null;
 
   const contextFiles = useMemo(
@@ -418,7 +418,9 @@ function CanvasPage() {
                       <ul className="mt-3 space-y-1.5 text-xs">
                         {audit.scores.map((s) => (
                           <li key={s.id} className="flex items-center justify-between gap-3">
-                            <span className="text-muted-foreground">{s.label}</span>
+                            <span className="text-muted-foreground">
+                              {CRITERIA.find((c) => c.id === s.id)?.title ?? s.id}
+                            </span>
                             <span className="font-semibold tabular-nums">{s.score}</span>
                           </li>
                         ))}
