@@ -42,6 +42,14 @@ import {
 } from "@/lib/canvas.functions";
 import { proposeCanvasChanges } from "@/lib/canvas-ai.functions";
 import { prewarmSandpack } from "@/lib/sandpack-prewarm";
+import {
+  cacheProjectFiles,
+  dropCachedProject,
+  loadLastProject,
+  readCachedProject,
+  rememberLastProject,
+} from "@/lib/canvas-cache";
+
 
 const LivePreview = lazy(() => import("@/components/canvas/LivePreview"));
 
