@@ -249,6 +249,7 @@ function CanvasPage() {
       setFiles(next);
       setChanges([]);
       setDirty([]);
+      if (projectId) await cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", next);
       await queryClient.invalidateQueries({ queryKey: ["canvas-project", projectId] });
       toast.success("Zmeny prijaté a uložené ako nová verzia");
     },
@@ -270,9 +271,12 @@ function CanvasPage() {
     },
     onSuccess: async (restored) => {
       setFiles(restored);
+      if (projectId)
+        await cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", restored);
       await queryClient.invalidateQueries({ queryKey: ["canvas-project", projectId] });
       toast.success("Verzia obnovená");
     },
+
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Obnova zlyhala"),
   });
 
