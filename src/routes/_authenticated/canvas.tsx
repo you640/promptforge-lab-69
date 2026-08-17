@@ -419,7 +419,7 @@ function CanvasPage() {
                         {audit.scores.map((s) => (
                           <li key={s.id} className="flex items-center justify-between gap-3">
                             <span className="text-muted-foreground">
-                              {CRITERIA.find((c) => c.id === s.id)?.title ?? s.id}
+                              {CRITERIA.find((c) => c.id === s.id)?.name ?? s.id}
                             </span>
                             <span className="font-semibold tabular-nums">{s.score}</span>
                           </li>
