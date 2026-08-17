@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,6 +41,7 @@ import {
   saveCanvasFile,
 } from "@/lib/canvas.functions";
 import { proposeCanvasChanges } from "@/lib/canvas-ai.functions";
+import { prewarmSandpack } from "@/lib/sandpack-prewarm";
 
 const LivePreview = lazy(() => import("@/components/canvas/LivePreview"));
 
@@ -90,7 +91,13 @@ function CanvasPage() {
   const [aiSummary, setAiSummary] = useState("");
   const [importing, setImporting] = useState(false);
 
+  // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
+  useEffect(() => {
+    prewarmSandpack();
+  }, []);
+
   const projects = useQuery({ queryKey: ["canvas-projects"], queryFn: () => listFn({}) });
+
 
   const detail = useQuery({
     queryKey: ["canvas-project", projectId],
@@ -360,7 +367,9 @@ function CanvasPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="preview">
+              {/* forceMount: iframe s bundlerom zostáva nažive, takže prepnutie
+                  na náhľad je okamžité namiesto nového buildu. */}
+              <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden">
                 <div className="surface-card p-4">
                   <ClientOnly
                     fallback={
@@ -381,6 +390,7 @@ function CanvasPage() {
                   </ClientOnly>
                 </div>
               </TabsContent>
+
 
               <TabsContent value="prompt">
                 <div className="surface-card p-4">

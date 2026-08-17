@@ -1,5 +1,6 @@
 import { SandpackPreview, SandpackProvider } from "@codesandbox/sandpack-react";
 import type { CanvasFile } from "@/lib/canvas-types";
+import { SANDPACK_BUNDLER_URL } from "@/lib/sandpack-prewarm";
 
 type Template = "react-ts" | "static" | "vanilla";
 
@@ -77,7 +78,8 @@ export default function LivePreview({ files }: { files: CanvasFile[] }) {
           ...(picked.entry ? { entry: `/${picked.entry}` } : {}),
         }}
         theme="auto"
-        options={{ externalResources: [] }}
+        options={{ externalResources: [], bundlerURL: SANDPACK_BUNDLER_URL }}
+
       >
         <SandpackPreview
           showOpenInCodeSandbox={false}
