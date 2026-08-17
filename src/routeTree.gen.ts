@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyzatorRouteImport } from './routes/analyzator'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as HistoriaRouteImport } from './routes/historia'
 import { Route as KriteriaRouteImport } from './routes/kriteria'
 import { Route as NastaveniaRouteImport } from './routes/nastavenia'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const AnalyzatorRoute = AnalyzatorRouteImport.update({
   id: '/analyzator',
   path: '/analyzator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoriaRoute = HistoriaRouteImport.update({
@@ -62,6 +68,7 @@ const SandboxRoute = SandboxRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/auth': typeof AuthRoute
   '/historia': typeof HistoriaRoute
   '/kriteria': typeof KriteriaRoute
   '/nastavenia': typeof NastaveniaRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/auth': typeof AuthRoute
   '/historia': typeof HistoriaRoute
   '/kriteria': typeof KriteriaRoute
   '/nastavenia': typeof NastaveniaRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyzator': typeof AnalyzatorRoute
+  '/auth': typeof AuthRoute
   '/historia': typeof HistoriaRoute
   '/kriteria': typeof KriteriaRoute
   '/nastavenia': typeof NastaveniaRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analyzator'
+    | '/auth'
     | '/historia'
     | '/kriteria'
     | '/nastavenia'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/analyzator'
+    | '/auth'
     | '/historia'
     | '/kriteria'
     | '/nastavenia'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/analyzator'
+    | '/auth'
     | '/historia'
     | '/kriteria'
     | '/nastavenia'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzatorRoute: typeof AnalyzatorRoute
+  AuthRoute: typeof AuthRoute
   HistoriaRoute: typeof HistoriaRoute
   KriteriaRoute: typeof KriteriaRoute
   NastaveniaRoute: typeof NastaveniaRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/analyzator'
       fullPath: '/analyzator'
       preLoaderRoute: typeof AnalyzatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/historia': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzatorRoute: AnalyzatorRoute,
+  AuthRoute: AuthRoute,
   HistoriaRoute: HistoriaRoute,
   KriteriaRoute: KriteriaRoute,
   NastaveniaRoute: NastaveniaRoute,
