@@ -63,7 +63,7 @@ export const Route = createFileRoute("/_authenticated/canvas")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: CanvasPage;
+  component: CanvasPage,
 });
 
 function CanvasPage() {
