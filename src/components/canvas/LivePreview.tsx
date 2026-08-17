@@ -1,4 +1,4 @@
-import { Sandpack } from "@codesandbox/sandpack-react";
+import { SandpackPreview, SandpackProvider } from "@codesandbox/sandpack-react";
 import type { CanvasFile } from "@/lib/canvas-types";
 
 type Template = "react-ts" | "static" | "vanilla";
