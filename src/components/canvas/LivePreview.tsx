@@ -97,6 +97,7 @@ export default function LivePreview({
     const s = loadSettings(projectId ?? null);
     setMode(s.mode ?? plan.mode);
     setTarget(s.target ?? plan.target);
+    setLogs([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
@@ -104,6 +105,7 @@ export default function LivePreview({
     if (mode === "react" && !files.some((f) => f.path === target)) setTarget(plan.target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan.mode, plan.target]);
+
 
   useEffect(() => {
     saveSettings(projectId ?? null, { ...(mode ? { mode } : {}), ...(target ? { target } : {}) });
