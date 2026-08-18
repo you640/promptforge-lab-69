@@ -98,6 +98,7 @@ function CanvasPage() {
   const [changes, setChanges] = useState<ProposedChange[]>([]);
   const [aiSummary, setAiSummary] = useState("");
   const [importing, setImporting] = useState(false);
+  const [autosave, setAutosave] = useState(true);
 
   // Stav načítavania: "cache" (čítame IndexedDB), "cloud" (synchronizujeme z cloudu), "ready" | null
   const [loadState, setLoadState] = useState<"cache" | "cloud" | "ready" | null>(null);
@@ -214,12 +215,37 @@ function CanvasPage() {
     onSuccess: () => {
       setDirty((prev) => prev.filter((p) => p !== activePath));
       if (projectId) void cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", files);
-      toast.success("Súbor uložený");
+      if (!autosave) toast.success("Súbor uložený");
     },
 
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Uloženie sa nepodarilo"),
   });
+
+  // Autosave: 1,5 s po poslednej úprave uložíme rozpracovaný súbor,
+  // aby sa práca nestratila pri prepnutí súboru alebo zatvorení karty.
+  useEffect(() => {
+    if (!autosave || !projectId || !activeFile) return;
+    if (!dirty.includes(activeFile.path)) return;
+    const timer = setTimeout(() => {
+      if (!saveMutation.isPending) saveMutation.mutate();
+    }, 1500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autosave, projectId, activeFile?.path, activeFile?.content, dirty]);
+
+  // Ctrl/Cmd+S uloží aktuálny súbor okamžite.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (activeFile && dirty.includes(activeFile.path)) saveMutation.mutate();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFile?.path, dirty]);
 
   const runAudit = async () => {
     const result = analyzePrompt(prompt);
@@ -440,13 +466,30 @@ function CanvasPage() {
                     <span className="truncate font-mono text-xs text-muted-foreground">
                       {activeFile?.path ?? "—"}
                     </span>
-                    <Button
-                      size="sm"
-                      onClick={() => saveMutation.mutate()}
-                      disabled={!activeFile || !dirty.includes(activeFile.path)}
-                    >
-                      <Save className="mr-1 h-4 w-4" /> Uložiť
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground" aria-live="polite">
+                        {saveMutation.isPending
+                          ? "Ukladám…"
+                          : activeFile && dirty.includes(activeFile.path)
+                            ? "Neuložené zmeny"
+                            : "Uložené"}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant={autosave ? "secondary" : "outline"}
+                        onClick={() => setAutosave((v) => !v)}
+                        title="Automatické ukladanie 1,5 s po úprave"
+                      >
+                        Autosave: {autosave ? "zap." : "vyp."}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => saveMutation.mutate()}
+                        disabled={!activeFile || !dirty.includes(activeFile.path)}
+                      >
+                        <Save className="mr-1 h-4 w-4" /> Uložiť
+                      </Button>
+                    </div>
                   </div>
                   <Textarea
                     value={activeFile?.content ?? ""}

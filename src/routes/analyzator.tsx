@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Download, Save, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { BrainCircuit, Download, Loader2, Save, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { CriteriaBars, ScoreRing } from "@/components/ScoreVisuals";
@@ -14,6 +15,7 @@ import { diffLines } from "@/lib/diff";
 import { exportAnalysisPdf } from "@/lib/export";
 import { DRAFT_KEY, loadLighthouseAudits, saveEntry } from "@/lib/storage";
 import type { LighthouseAudit } from "@/lib/lighthouse.functions";
+import { reviewPromptWithAi, type AiPromptReview } from "@/lib/prompt-ai.functions";
 
 export const Route = createFileRoute("/analyzator")({
   head: () => ({
@@ -38,6 +40,28 @@ function Analyzer() {
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [audits, setAudits] = useState<LighthouseAudit[]>([]);
+  const [review, setReview] = useState<AiPromptReview | null>(null);
+  const [reviewing, setReviewing] = useState(false);
+  const [tab, setTab] = useState("checklist");
+  const runReview = useServerFn(reviewPromptWithAi);
+
+  async function handleAiReview() {
+    if (prompt.trim().length < 20) {
+      toast.error("Prompt je príliš krátky na AI audit (min. 20 znakov)");
+      return;
+    }
+    setReviewing(true);
+    try {
+      const res = await runReview({ data: { prompt } });
+      setReview(res);
+      setTab("ai");
+      toast.success(`AI hodnotenie hotové — ${Math.round(res.total)}/100`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "AI audit sa nepodaril");
+    } finally {
+      setReviewing(false);
+    }
+  }
 
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_KEY);
@@ -103,6 +127,19 @@ function Analyzer() {
               </Button>
               <Button
                 size="sm"
+                variant="secondary"
+                disabled={reviewing || !prompt.trim()}
+                onClick={() => void handleAiReview()}
+              >
+                {reviewing ? (
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                ) : (
+                  <BrainCircuit className="mr-1 h-4 w-4" />
+                )}
+                AI audit
+              </Button>
+              <Button
+                size="sm"
                 disabled={!prompt.trim()}
                 onClick={() => {
                   saveEntry(title, prompt, result);
@@ -131,13 +168,98 @@ function Analyzer() {
         </div>
       </div>
 
-      <Tabs defaultValue="checklist" className="mt-6">
+      <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList className="flex w-full flex-wrap justify-start">
           <TabsTrigger value="checklist">Checklisty</TabsTrigger>
+          <TabsTrigger value="ai">AI audit</TabsTrigger>
           <TabsTrigger value="suggestions">Návrhy</TabsTrigger>
           <TabsTrigger value="diff">Diff viewer</TabsTrigger>
           <TabsTrigger value="lighthouse">Lighthouse</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="ai" className="mt-4">
+          <div className="surface-card p-5">
+            {review ? (
+              <div className="space-y-5">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge>{Math.round(review.total)}/100 podľa AI</Badge>
+                  <p className="min-w-0 text-sm text-muted-foreground">{review.verdict}</p>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  {review.scores.map((s) => {
+                    const c = CRITERIA.find((x) => x.id === s.id);
+                    return (
+                      <div key={s.id} className="rounded-lg border border-border p-4">
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                          <h3 className="truncate text-sm font-semibold">{c?.name ?? s.id}</h3>
+                          <Badge variant={s.score >= 80 ? "default" : "secondary"}>
+                            {Math.round(s.score)}/100
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{s.finding}</p>
+                        <p className="mt-2 text-sm">
+                          <span className="font-medium">Oprav: </span>
+                          {s.fix}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {review.risks.length > 0 && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold">Riziká</h3>
+                    <ul className="space-y-2 text-sm">
+                      {review.risks.map((r) => (
+                        <li key={r} className="flex gap-3">
+                          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                          <span>{r}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div>
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold">Prepísaný prompt od AI</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(review.rewritten);
+                          toast.success("Skopírované");
+                        }}
+                      >
+                        Kopírovať
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setPrompt(review.rewritten);
+                          toast.success("Prompt nahradený AI verziou");
+                        }}
+                      >
+                        Použiť v editore
+                      </Button>
+                    </div>
+                  </div>
+                  <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/40 p-4 font-mono text-xs leading-relaxed">
+                    {review.rewritten}
+                  </pre>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Klikni na <span className="font-medium">AI audit</span> — model prejde prompt podľa 7
+                kritérií, vypíše konkrétne nálezy, riziká a vráti kompletne prepísaný prompt.
+              </p>
+            )}
+          </div>
+        </TabsContent>
+
 
         <TabsContent value="lighthouse" className="mt-4">
           <div className="surface-card p-5">
