@@ -63,20 +63,57 @@ ${BASE_STYLE}${tailwind}${BRIDGE}</head>
 <script type="module">${inlineSafe(code)}</script></body></html>`;
 }
 
-/** HTML dokument pre statickú stránku: lokálne <script>/<link> nahradíme obsahom. */
-export function staticDocument(files: CanvasFile[], htmlPath: string): string {
-  const html = files.find((f) => f.path === htmlPath)?.content ?? "";
+function resolveLocal(files: CanvasFile[], htmlPath: string, src: string): CanvasFile | undefined {
   const dir = htmlPath.split("/").slice(0, -1).join("/");
-  const find = (src: string) => {
-    const clean = src.replace(/^\.?\//, "").split("?")[0]!;
-    return (
-      files.find((f) => f.path === clean) ??
-      files.find((f) => f.path === (dir ? `${dir}/${clean}` : clean)) ??
-      files.find((f) => f.path.endsWith(`/${clean}`))
-    );
-  };
+  const clean = src.replace(/^\.?\//, "").split(/[?#]/)[0]!;
+  return (
+    files.find((f) => f.path === clean) ??
+    files.find((f) => f.path === (dir ? `${dir}/${clean}` : clean)) ??
+    files.find((f) => f.path.endsWith(`/${clean}`))
+  );
+}
 
-  let out = html
+/** Lokálne <script src> zo statickej stránky (v poradí výskytu). */
+export function localScriptPaths(files: CanvasFile[], htmlPath: string): string[] {
+  const html = files.find((f) => f.path === htmlPath)?.content ?? "";
+  const out: string[] = [];
+  for (const m of html.matchAll(/<script\b[^>]*src=["']([^"']+)["'][^>]*>/gi)) {
+    const src = m[1]!;
+    if (/^https?:|^\/\//.test(src)) continue;
+    const file = resolveLocal(files, htmlPath, src);
+    if (file && !out.includes(file.path)) out.push(file.path);
+  }
+  return out;
+}
+
+/**
+ * Vnorené iframe v projekte nesmie žiadať allow-scripts + allow-same-origin
+ * (to prelomí sandbox náhľadu), preto same-origin odstránime.
+ */
+function hardenNestedFrames(html: string): string {
+  return html.replace(/<iframe\b[^>]*>/gi, (tag) =>
+    tag.replace(/sandbox=(["'])([^"']*)\1/i, (_m, q: string, value: string) => {
+      const tokens = value.split(/\s+/).filter(Boolean);
+      const hasScripts = tokens.includes("allow-scripts");
+      const kept = tokens.filter((t) => !(hasScripts && t === "allow-same-origin"));
+      return `sandbox=${q}${kept.join(" ")}${q}`;
+    }),
+  );
+}
+
+/**
+ * HTML dokument pre statickú stránku: lokálne <link> nahradíme obsahom
+ * a lokálne <script> skompilovaným kódom (mapa path → JS).
+ */
+export function staticDocument(
+  files: CanvasFile[],
+  htmlPath: string,
+  compiled?: Map<string, string>,
+): string {
+  const html = files.find((f) => f.path === htmlPath)?.content ?? "";
+  const find = (src: string) => resolveLocal(files, htmlPath, src);
+
+  let out = hardenNestedFrames(html)
     .replace(/<link\b[^>]*href=["']([^"']+)["'][^>]*>/gi, (tag, href: string) => {
       if (/^https?:/.test(href) || !/\.css(\?|$)/.test(href)) return tag;
       const file = find(href);
@@ -85,11 +122,12 @@ export function staticDocument(files: CanvasFile[], htmlPath: string): string {
     .replace(
       /<script\b([^>]*)src=["']([^"']+)["']([^>]*)><\/script>/gi,
       (tag, pre: string, src: string, post: string) => {
-        if (/^https?:/.test(src)) return tag;
+        if (/^https?:|^\/\//.test(src)) return tag;
         const file = find(src);
-        if (!file) return tag;
-        const isModule = /type=["']module["']/.test(pre + post);
-        return `<script${isModule ? ' type="module"' : ""}>${inlineSafe(file.content)}</script>`;
+        if (!file) return `<!-- náhľad: chýba ${src} -->`;
+        const code = compiled?.get(file.path) ?? file.content;
+        const isModule = compiled?.has(file.path) || /type=["']module["']/.test(pre + post);
+        return `<script${isModule ? ' type="module"' : ""}>${inlineSafe(code)}</script>`;
       },
     );
 
@@ -99,6 +137,7 @@ export function staticDocument(files: CanvasFile[], htmlPath: string): string {
     : `<!doctype html><html><head><meta charset="utf-8">${injection}</head><body>${out}</body></html>`;
   return out;
 }
+
 
 /** Dokumentový režim / chybová stránka. */
 export function docsDocument(inner: string): string {
