@@ -518,7 +518,11 @@ function CanvasPage() {
                         </div>
                       }
                     >
-                      <LivePreview files={files} />
+                      <LivePreview
+                        files={files}
+                        projectId={projectId}
+                        onOpenFile={(path) => setActivePath(path)}
+                      />
                     </Suspense>
                   </ClientOnly>
                 </div>
