@@ -97,6 +97,7 @@ export default function LivePreview({
     const s = loadSettings(projectId ?? null);
     setMode(s.mode ?? plan.mode);
     setTarget(s.target ?? plan.target);
+    setLogs([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
@@ -104,6 +105,7 @@ export default function LivePreview({
     if (mode === "react" && !files.some((f) => f.path === target)) setTarget(plan.target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan.mode, plan.target]);
+
 
   useEffect(() => {
     saveSettings(projectId ?? null, { ...(mode ? { mode } : {}), ...(target ? { target } : {}) });
@@ -200,6 +202,15 @@ export default function LivePreview({
     list.push("docs");
     return list.length > 0 ? list : ["none"];
   }, [files, plan]);
+
+  // Keď súbory dobehnú (alebo sa zmenia), zosúlaď režim s tým, čo sa naozaj dá spustiť —
+  // inak by select ukazoval prvú možnosť, ale build by bežal v starom režime.
+  useEffect(() => {
+    if (availableModes.includes(mode)) return;
+    setMode(availableModes.includes(plan.mode) ? plan.mode : availableModes[0]!);
+    setTarget(undefined);
+  }, [availableModes, mode, plan.mode]);
+
 
   const targetOptions = useMemo(() => {
     if (mode === "component") return plan.components;
