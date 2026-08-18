@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Download, Save, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { BrainCircuit, Download, Loader2, Save, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { CriteriaBars, ScoreRing } from "@/components/ScoreVisuals";
@@ -14,6 +15,7 @@ import { diffLines } from "@/lib/diff";
 import { exportAnalysisPdf } from "@/lib/export";
 import { DRAFT_KEY, loadLighthouseAudits, saveEntry } from "@/lib/storage";
 import type { LighthouseAudit } from "@/lib/lighthouse.functions";
+import { reviewPromptWithAi, type AiPromptReview } from "@/lib/prompt-ai.functions";
 
 export const Route = createFileRoute("/analyzator")({
   head: () => ({
