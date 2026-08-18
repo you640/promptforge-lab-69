@@ -41,7 +41,7 @@ import {
   saveCanvasFile,
 } from "@/lib/canvas.functions";
 import { proposeCanvasChanges } from "@/lib/canvas-ai.functions";
-import { prewarmSandpack } from "@/lib/sandpack-prewarm";
+import { prewarmPreview } from "@/lib/preview/prewarm";
 import {
   cacheProjectFiles,
   dropCachedProject,
