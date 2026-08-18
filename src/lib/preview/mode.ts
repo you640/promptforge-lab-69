@@ -70,7 +70,7 @@ export function planPreview(files: CanvasFile[]): PreviewPlan {
   }
   if (components.length > 0) {
     notes.push("Projekt nemá entry point, spúšťame vybraný komponent samostatne.");
-    return { mode: "component", label: "Komponent", target: components[0], components, notes };
+    return { mode: "component", label: "Komponent", target: components[0]!, components, notes };
   }
   if (hasDocs(files)) {
     notes.push("V projekte nie je frontend entry point ani komponent na spustenie.");
