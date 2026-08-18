@@ -152,8 +152,28 @@ export default function LivePreview({
           if (mode === "html") {
             const path = target ?? plan.target;
             if (!path) throw new Error("Nenašiel sa HTML súbor");
-            if (!cancelled) setDoc(staticDocument(files, path));
-            setExternals([]);
+            // Lokálne skripty (aj TypeScript alebo s importmi) skompilujeme, inak
+            // by prehliadač v iframe spadol ešte pred prvým vykreslením.
+            const compiled = new Map<string, string>();
+            const deps = new Set<string>();
+            for (const scriptPath of localScriptPaths(files, path)) {
+              try {
+                const built = await bundlePreview(files, scriptPath);
+                compiled.set(scriptPath, built.code);
+                for (const e of built.externals) deps.add(e);
+                for (const w of built.warnings) {
+                  pushLog({ level: "warn", message: w, ...locate(w, files) });
+                }
+              } catch (error) {
+                for (const m of extractBuildErrors(error)) {
+                  pushLog({ level: "error", message: m, ...locate(m, files) });
+                }
+              }
+            }
+            if (cancelled) return;
+            setDoc(staticDocument(files, path, compiled));
+            setExternals([...deps]);
+
           } else if (mode === "react" || mode === "component") {
             const entryPath = target ?? plan.target;
             if (!entryPath) throw new Error("Nenašiel sa entry point");
