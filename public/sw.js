@@ -34,6 +34,8 @@ function isCacheableAsset(request) {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return false;
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_serverFn")) return false;
+  // WASM bundler náhľadu: veľký súbor, cachujeme, aby druhé otvorenie bolo okamžité.
+  if (url.pathname.endsWith(".wasm")) return true;
   return ["script", "style", "font", "image", "manifest"].includes(request.destination);
 }
 

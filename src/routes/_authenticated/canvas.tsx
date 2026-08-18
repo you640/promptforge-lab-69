@@ -41,7 +41,7 @@ import {
   saveCanvasFile,
 } from "@/lib/canvas.functions";
 import { proposeCanvasChanges } from "@/lib/canvas-ai.functions";
-import { prewarmSandpack } from "@/lib/sandpack-prewarm";
+import { prewarmPreview } from "@/lib/preview/prewarm";
 import {
   cacheProjectFiles,
   dropCachedProject,
@@ -105,7 +105,7 @@ function CanvasPage() {
 
   // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
   useEffect(() => {
-    prewarmSandpack();
+    prewarmPreview();
     const last = loadLastProject();
     if (last) setProjectId(last);
   }, []);
@@ -518,7 +518,11 @@ function CanvasPage() {
                         </div>
                       }
                     >
-                      <LivePreview files={files} />
+                      <LivePreview
+                        files={files}
+                        projectId={projectId}
+                        onOpenFile={(path) => setActivePath(path)}
+                      />
                     </Suspense>
                   </ClientOnly>
                 </div>
