@@ -203,6 +203,15 @@ export default function LivePreview({
     return list.length > 0 ? list : ["none"];
   }, [files, plan]);
 
+  // Keď súbory dobehnú (alebo sa zmenia), zosúlaď režim s tým, čo sa naozaj dá spustiť —
+  // inak by select ukazoval prvú možnosť, ale build by bežal v starom režime.
+  useEffect(() => {
+    if (availableModes.includes(mode)) return;
+    setMode(availableModes.includes(plan.mode) ? plan.mode : availableModes[0]!);
+    setTarget(undefined);
+  }, [availableModes, mode, plan.mode]);
+
+
   const targetOptions = useMemo(() => {
     if (mode === "component") return plan.components;
     if (mode === "html") return files.filter((f) => f.path.endsWith(".html")).map((f) => f.path);
