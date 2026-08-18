@@ -105,7 +105,7 @@ function CanvasPage() {
 
   // Náhľad zahrejeme hneď po otvorení Canvasu, nie až pri prepnutí karty.
   useEffect(() => {
-    prewarmSandpack();
+    prewarmPreview();
     const last = loadLastProject();
     if (last) setProjectId(last);
   }, []);
