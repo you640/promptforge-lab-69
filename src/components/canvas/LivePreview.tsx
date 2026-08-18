@@ -13,9 +13,11 @@ import {
 import {
   docsDocument,
   errorDocument,
+  localScriptPaths,
   moduleDocument,
   staticDocument,
 } from "@/lib/preview/html";
+
 import { renderDocsPreview } from "@/lib/preview/docs-render";
 import { PreviewConsole, type PreviewLogEntry } from "./PreviewConsole";
 import { PreviewFrame } from "./PreviewFrame";
