@@ -40,6 +40,26 @@ function Analyzer() {
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [audits, setAudits] = useState<LighthouseAudit[]>([]);
+  const [review, setReview] = useState<AiPromptReview | null>(null);
+  const [reviewing, setReviewing] = useState(false);
+  const runReview = useServerFn(reviewPromptWithAi);
+
+  async function handleAiReview() {
+    if (prompt.trim().length < 20) {
+      toast.error("Prompt je príliš krátky na AI audit (min. 20 znakov)");
+      return;
+    }
+    setReviewing(true);
+    try {
+      const res = await runReview({ data: { prompt } });
+      setReview(res);
+      toast.success(`AI hodnotenie hotové — ${Math.round(res.total)}/100`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "AI audit sa nepodaril");
+    } finally {
+      setReviewing(false);
+    }
+  }
 
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_KEY);
