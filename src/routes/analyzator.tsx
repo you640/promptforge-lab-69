@@ -125,6 +125,19 @@ function Analyzer() {
               </Button>
               <Button
                 size="sm"
+                variant="secondary"
+                disabled={reviewing || !prompt.trim()}
+                onClick={() => void handleAiReview()}
+              >
+                {reviewing ? (
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                ) : (
+                  <BrainCircuit className="mr-1 h-4 w-4" />
+                )}
+                AI audit
+              </Button>
+              <Button
+                size="sm"
                 disabled={!prompt.trim()}
                 onClick={() => {
                   saveEntry(title, prompt, result);
