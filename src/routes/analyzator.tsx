@@ -42,6 +42,7 @@ function Analyzer() {
   const [audits, setAudits] = useState<LighthouseAudit[]>([]);
   const [review, setReview] = useState<AiPromptReview | null>(null);
   const [reviewing, setReviewing] = useState(false);
+  const [tab, setTab] = useState("checklist");
   const runReview = useServerFn(reviewPromptWithAi);
 
   async function handleAiReview() {
@@ -53,6 +54,7 @@ function Analyzer() {
     try {
       const res = await runReview({ data: { prompt } });
       setReview(res);
+      setTab("ai");
       toast.success(`AI hodnotenie hotové — ${Math.round(res.total)}/100`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "AI audit sa nepodaril");
@@ -166,7 +168,7 @@ function Analyzer() {
         </div>
       </div>
 
-      <Tabs defaultValue="checklist" className="mt-6">
+      <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList className="flex w-full flex-wrap justify-start">
           <TabsTrigger value="checklist">Checklisty</TabsTrigger>
           <TabsTrigger value="ai">AI audit</TabsTrigger>
