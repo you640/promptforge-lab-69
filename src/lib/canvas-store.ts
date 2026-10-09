@@ -4,7 +4,7 @@ import type { CanvasFile, CanvasProject, CanvasVersion } from "./canvas-types";
  * Lokálne úložisko Canvas projektov (localStorage) — bez prihlásenia.
  * Rozhranie ({ data }) zodpovedá pôvodným serverovým funkciám.
  */
-interface StoredProject {
+export interface StoredProject {
   project: CanvasProject;
   files: CanvasFile[];
   versions: CanvasVersion[];
@@ -124,4 +124,13 @@ export async function commitCanvasVersion({
 
 export async function logCanvasPromptRun(_: unknown) {
   return { ok: true };
+}
+
+/** Uloží projekt prenesený z cloudu (zachová pôvodné id); existujúci lokálny neprepíše. */
+export function importStoredProject(entry: StoredProject): boolean {
+  const all = readAll();
+  if (all[entry.project.id]) return false;
+  all[entry.project.id] = entry;
+  writeAll(all);
+  return true;
 }

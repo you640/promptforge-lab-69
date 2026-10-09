@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileTree } from "@/components/canvas/FileTree";
 import { DiffView } from "@/components/canvas/DiffView";
+import { CloudImport } from "@/components/canvas/CloudImport";
 import { analyzePrompt, CRITERIA, type AnalysisResult } from "@/lib/criteria";
 import { exportZip, importZip } from "@/lib/canvas-zip";
 import {
@@ -350,6 +351,9 @@ function CanvasPage() {
           )}
           Nahrať ZIP
         </Button>
+        <CloudImport
+          onDone={() => void queryClient.invalidateQueries({ queryKey: ["canvas-projects"] })}
+        />
 
         <select
           value={projectId ?? ""}
