@@ -90,9 +90,7 @@ export function componentEntryFile(componentPath: string): CanvasFile {
     content: `import { createRoot } from "react-dom/client";
 import * as mod from "${rel}";
 
-const Component =
-  (mod as any).default ??
-  Object.values(mod).find((v) => typeof v === "function");
+const Component = [(mod as any).default, ...Object.values(mod)].find((v) => typeof v === "function") as any;
 
 const el = document.getElementById("root") ?? document.body;
 if (!Component) {
