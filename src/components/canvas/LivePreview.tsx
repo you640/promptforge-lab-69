@@ -177,8 +177,10 @@ export default function LivePreview({
             setExternals([...deps]);
 
           } else if (mode === "react" || mode === "component") {
-            const entryPath = target ?? plan.target;
-            if (!entryPath) throw new Error("Nenašiel sa entry point");
+            let entryPath = target ?? plan.target;
+            if (mode === "component" && (!entryPath || !plan.components.includes(entryPath)))
+              entryPath = plan.components[0];
+            if (!entryPath) throw new Error("Nenašiel sa entry point ani komponent na spustenie");
             const extra = mode === "component" ? [componentEntryFile(entryPath)] : [];
             const entry = mode === "component" ? COMPONENT_ENTRY : entryPath;
             const result = await bundlePreview(files, entry, extra);
@@ -232,6 +234,12 @@ export default function LivePreview({
     setMode(availableModes.includes(plan.mode) ? plan.mode : availableModes[0]!);
     setTarget(undefined);
   }, [availableModes, mode, plan.mode]);
+
+  // V režime „Komponent" nikdy necieľ HTML ani iný ne-komponentový súbor.
+  useEffect(() => {
+    if (mode === "component" && target && !plan.components.includes(target))
+      setTarget(plan.components[0]);
+  }, [mode, target, plan.components]);
 
 
   const targetOptions = useMemo(() => {

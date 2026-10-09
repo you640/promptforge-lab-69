@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const inputSchema = z.object({
   prompt: z.string().min(3).max(8000),
@@ -16,7 +15,6 @@ export interface AiChangeResult {
 }
 
 export const proposeCanvasChanges = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input) => inputSchema.parse(input))
   .handler(async ({ data }): Promise<AiChangeResult> => {
     const apiKey = process.env["LOVABLE_API_KEY"];

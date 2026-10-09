@@ -39,7 +39,7 @@ import {
   listCanvasProjects,
   logCanvasPromptRun,
   saveCanvasFile,
-} from "@/lib/canvas.functions";
+} from "@/lib/canvas-store";
 import { proposeCanvasChanges } from "@/lib/canvas-ai.functions";
 import { prewarmPreview } from "@/lib/preview/prewarm";
 import {
@@ -53,7 +53,7 @@ import {
 
 const LivePreview = lazy(() => import("@/components/canvas/LivePreview"));
 
-export const Route = createFileRoute("/_authenticated/canvas")({
+export const Route = createFileRoute("/canvas")({
   head: () => ({
     meta: [
       { title: "Canvas — vyskúšaj prompty na vlastnom projekte" },
@@ -79,13 +79,13 @@ function CanvasPage() {
   const queryClient = useQueryClient();
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const listFn = useServerFn(listCanvasProjects);
-  const getFn = useServerFn(getCanvasProject);
-  const createFn = useServerFn(createCanvasProject);
-  const deleteFn = useServerFn(deleteCanvasProject);
-  const saveFileFn = useServerFn(saveCanvasFile);
-  const commitFn = useServerFn(commitCanvasVersion);
-  const logRunFn = useServerFn(logCanvasPromptRun);
+  const listFn = listCanvasProjects;
+  const getFn = getCanvasProject;
+  const createFn = createCanvasProject;
+  const deleteFn = deleteCanvasProject;
+  const saveFileFn = saveCanvasFile;
+  const commitFn = commitCanvasVersion;
+  const logRunFn = logCanvasPromptRun;
   const proposeFn = useServerFn(proposeCanvasChanges);
 
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -378,11 +378,11 @@ function CanvasPage() {
             title={
               loadState === "cache"
                 ? "Načítavam súbory z lokálnej cache (IndexedDB)"
-                : "Synchronizujem najnovšiu verziu z cloudu"
+                : "Načítavam projekt z tohto zariadenia"
             }
           >
             <Loader2 className="h-3 w-3 animate-spin" />
-            {loadState === "cache" ? "Načítavam z cache…" : "Synchronizujem cloud…"}
+            {loadState === "cache" ? "Načítavam z cache…" : "Načítavam projekt…"}
           </Badge>
         )}
         {projectId && loadState === "ready" && (
