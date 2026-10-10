@@ -4,9 +4,11 @@ import { z } from "zod";
 const inputSchema = z.object({
   prompt: z.string().min(3).max(8000),
   files: z
-    .array(z.object({ path: z.string().min(1), content: z.string().max(8000) }))
+    .array(z.object({ path: z.string().min(1), content: z.string().max(60_000) }))
     .min(1)
-    .max(12),
+    .max(300)
+    .refine((fs) => fs.reduce((n, f) => n + f.content.length, 0) <= 650_000, "Projekt je príliš veľký"),
+  omitted: z.array(z.string()).max(2000).default([]),
 });
 
 export interface AiChangeResult {
@@ -23,6 +25,9 @@ export const proposeCanvasChanges = createServerFn({ method: "POST" })
     const context = data.files
       .map((f) => `--- FILE: ${f.path} ---\n${f.content}`)
       .join("\n\n");
+    const map = data.omitted.length
+      ? `\n\nĎALŠIE SÚBORY V PROJEKTE (obsah neposlaný):\n${data.omitted.join("\n")}`
+      : "";
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -36,11 +41,12 @@ export const proposeCanvasChanges = createServerFn({ method: "POST" })
           {
             role: "system",
             content:
-              "Si senior frontend developer. Dostaneš prompt používateľa a obsah vybraných súborov projektu. " +
+              "Si senior frontend developer. Dostaneš prompt používateľa a celý projekt (všetky súbory, ktoré sa zmestili). " +
+              "Pochop štruktúru projektu, importy a štýly a navrhni zmeny, ktoré na seba nadväzujú a projekt sa po nich spustí. " +
               "Vráť konkrétne úpravy súborov. Pre každý zmenený súbor vráť CELÝ nový obsah súboru, nie diff. " +
               "Meň len súbory, ktoré je nutné zmeniť. Nové súbory môžeš pridať. Odpovedaj po slovensky v poli summary a reason.",
           },
-          { role: "user", content: `PROMPT:\n${data.prompt}\n\nSÚBORY:\n${context}` },
+          { role: "user", content: `PROMPT:\n${data.prompt}\n\nSÚBORY PROJEKTU:\n${context}${map}` },
         ],
         response_format: {
           type: "json_schema",
