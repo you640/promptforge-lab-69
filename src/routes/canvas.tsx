@@ -23,11 +23,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileTree } from "@/components/canvas/FileTree";
 import { DiffView } from "@/components/canvas/DiffView";
 import { CloudImport } from "@/components/canvas/CloudImport";
+import { buildAiContext } from "@/lib/canvas-context";
 import { analyzePrompt, CRITERIA, type AnalysisResult } from "@/lib/criteria";
 import { exportZip, importZip } from "@/lib/canvas-zip";
 import {
-  AI_CONTEXT_CHARS,
-  AI_CONTEXT_FILES,
   type CanvasFile,
   type CanvasVersion,
   type ProposedChange,
@@ -169,14 +168,21 @@ function CanvasPage() {
   const versions = (detail.data?.versions ?? []) as unknown as CanvasVersion[];
   const activeFile = files.find((f) => f.path === activePath) ?? null;
 
-  const contextFiles = useMemo(
-    () =>
-      files
-        .filter((f) => contextPaths.includes(f.path))
-        .slice(0, AI_CONTEXT_FILES)
-        .map((f) => ({ path: f.path, content: f.content.slice(0, AI_CONTEXT_CHARS) })),
-    [files, contextPaths],
+  const aiContext = useMemo(
+    () => buildAiContext(files, prompt, contextPaths),
+    [files, prompt, contextPaths],
   );
+  const proposedFiles = useMemo(() => {
+    if (changes.length === 0) return files;
+    const next = [...files];
+    for (const c of changes) {
+      const i = next.findIndex((f) => f.path === c.path);
+      if (i >= 0) next[i] = { path: c.path, content: c.newContent };
+      else next.push({ path: c.path, content: c.newContent });
+    }
+    return next;
+  }, [files, changes]);
+  const [showProposed, setShowProposed] = useState(true);
 
   const onImport = async (file: File) => {
     setImporting(true);
@@ -260,12 +266,13 @@ function CanvasPage() {
 
   const proposeMutation = useMutation({
     mutationFn: async () => {
-      if (contextFiles.length === 0) throw new Error("Vyber aspoň jeden súbor do kontextu");
-      return proposeFn({ data: { prompt, files: contextFiles } });
+      if (aiContext.files.length === 0) throw new Error("Najprv nahraj projekt");
+      return proposeFn({ data: { prompt, files: aiContext.files, omitted: aiContext.omitted } });
     },
     onSuccess: async (res) => {
       setChanges(res.changes);
       setAiSummary(res.summary);
+      setShowProposed(true);
       if (res.changes.length === 0) toast.info("AI nenavrhla žiadne zmeny");
       if (projectId) {
         await logRunFn({
@@ -451,7 +458,8 @@ function CanvasPage() {
               }
             />
             <p className="mt-3 text-xs text-muted-foreground">
-              Zaškrtnuté súbory idú do kontextu promptu (max {AI_CONTEXT_FILES}).
+              AI vidí celý projekt ({aiContext.files.length} z {files.length} súborov). Zaškrtnuté
+              súbory dostanú prednosť.
             </p>
           </div>
 
@@ -597,6 +605,42 @@ function CanvasPage() {
                             Prijať zmeny ({changes.length})
                           </Button>
                         </div>
+                      </div>
+                      <div className="rounded-lg border border-border p-3">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <h4 className="text-sm font-semibold">Náhľad výsledku</h4>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant={showProposed ? "outline" : "default"}
+                              onClick={() => setShowProposed(false)}
+                            >
+                              Pred
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={showProposed ? "default" : "outline"}
+                              onClick={() => setShowProposed(true)}
+                            >
+                              Po zmenách
+                            </Button>
+                          </div>
+                        </div>
+                        <ClientOnly fallback={null}>
+                          <Suspense
+                            fallback={
+                              <div className="grid h-[360px] place-items-center">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                              </div>
+                            }
+                          >
+                            <LivePreview
+                              files={showProposed ? proposedFiles : files}
+                              projectId={projectId}
+                              onOpenFile={(path) => setActivePath(path)}
+                            />
+                          </Suspense>
+                        </ClientOnly>
                       </div>
                       {changes.map((change) => (
                         <div key={change.path} className="rounded-lg border border-border p-3">
