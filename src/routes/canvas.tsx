@@ -267,13 +267,13 @@ function CanvasPage() {
   const proposeMutation = useMutation({
     mutationFn: async () => {
       if (aiContext.files.length === 0) throw new Error("Najprv nahraj projekt");
-      return proposeFn({ data: { prompt, files: aiContext.files, omitted: aiContext.omitted } });
+      return proposeFn({ data: { prompt, files: aiContext.files, omitted: aiContext.omitted, priorityPaths: contextPaths } });
     },
     onSuccess: async (res) => {
       setChanges(res.changes);
       setAiSummary(res.summary);
       setShowProposed(true);
-      if (res.changes.length === 0) toast.info("AI nenavrhla žiadne zmeny");
+      if (res.changes.length === 0) toast.info(res.summary || "AI nenavrhla žiadne zmeny");
       if (projectId) {
         await logRunFn({
           data: { projectId, prompt, kind: "change", result: res },
@@ -458,8 +458,8 @@ function CanvasPage() {
               }
             />
             <p className="mt-3 text-xs text-muted-foreground">
-              AI vidí celý projekt ({aiContext.files.length} z {files.length} súborov). Zaškrtnuté
-              súbory dostanú prednosť.
+              Kontext AI: {aiContext.files.length}/{files.length} súborov
+              {aiContext.omitted.length > 0 && ` · ${aiContext.omitted.length} iba podľa názvu`}
             </p>
           </div>
 
@@ -565,6 +565,13 @@ function CanvasPage() {
                       Navrhnúť zmeny
                     </Button>
                   </div>
+
+                  {proposeMutation.isPending && (
+                    <p role="status" className="mt-3 text-sm text-muted-foreground">Pripravujem prepojené úpravy projektu…</p>
+                  )}
+                  {aiSummary && changes.length === 0 && (
+                    <p role="status" className="mt-3 text-sm text-muted-foreground">{aiSummary}</p>
+                  )}
 
                   {audit && (
                     <div className="mt-5 rounded-lg border border-border p-4">
