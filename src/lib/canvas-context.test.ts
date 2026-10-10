@@ -17,6 +17,27 @@ describe("buildAiContext", () => {
 
   it("puts ticked files first", () => {
     const ctx = buildAiContext([f("a.ts", 60), f("z.ts", 60)], "test", ["z.ts"], 100);
-    expect(ctx.files[0]!.path).toBe("z.ts");
+    expect(ctx.files[0]?.path).toBe("z.ts");
+  });
+
+  it("includes unselected style, layout and interactive files", () => {
+    const files = [f("src/App.tsx"), f("src/styles.css"), f("src/components/Menu.tsx"), f("package.json")];
+    expect(buildAiContext(files, "Zmeň celý štýl a layout a interaktívne komponenty", ["src/App.tsx"]).files).toEqual(expect.arrayContaining(files));
+  });
+
+  it("sends a full 90,000 character file without silent truncation", () => {
+    const file = f("src/styles.css", 90_000);
+    expect(buildAiContext([file], "štýl").files[0]?.content).toBe(file.content);
+  });
+
+  it("prioritizes shared styles over unrelated content for broad edits", () => {
+    const ctx = buildAiContext([f("a.txt", 60), f("src/styles.css", 60)], "Zmeň celý štýl stránky", [], 100);
+    expect(ctx.files[0]?.path).toBe("src/styles.css");
+  });
+
+  it("marks oversize files unread instead of returning truncated contents", () => {
+    const ctx = buildAiContext([f("src/App.tsx", 120_001)], "layout");
+    expect(ctx.files).toHaveLength(0);
+    expect(ctx.omitted).toEqual(["src/App.tsx"]);
   });
 });
