@@ -180,7 +180,7 @@ function CanvasPage() {
       if (i >= 0) next[i] = { path: c.path, content: c.newContent };
       else next.push({ path: c.path, content: c.newContent });
     }
-    return next;
+    return next.sort((a, b) => a.path.localeCompare(b.path));
   }, [files, changes]);
   const [showProposed, setShowProposed] = useState(true);
 
