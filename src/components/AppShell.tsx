@@ -77,9 +77,10 @@ export function AppShell({
             <div className="flex items-center justify-between pr-3">
               <Brand />
               <button
+                type="button"
                 aria-label="Zavrieť menu"
                 onClick={() => setOpen(false)}
-                className="rounded-md p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent"
+                className="relative z-10 rounded-md p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -94,9 +95,11 @@ export function AppShell({
         <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
           <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-4 py-3 lg:px-8">
             <button
+              type="button"
               aria-label="Otvoriť menu"
+              aria-expanded={open}
               onClick={() => setOpen(true)}
-              className="rounded-md border border-border p-2 text-foreground lg:hidden"
+              className="relative z-10 rounded-md border border-border p-2 text-foreground lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
