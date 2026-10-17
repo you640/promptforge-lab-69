@@ -56,7 +56,14 @@ export async function createCanvasProject({
     project,
     files: data.files,
     versions: [
-      { id: uid(), version: 1, prompt: "Import ZIP", audit_score: null, created_at: t, files: data.files },
+      {
+        id: uid(),
+        version: 1,
+        prompt: "Import ZIP",
+        audit_score: null,
+        created_at: t,
+        files: data.files,
+      },
     ],
   };
   writeAll(all);

@@ -10,17 +10,31 @@ export type AiChangeResult = z.infer<typeof canvasChangeSchema>;
 export function validateCanvasChanges(result: AiChangeResult, omitted: string[]): AiChangeResult {
   const seen = new Set<string>();
   for (const change of result.changes) {
-    if (!change.path || change.path.startsWith("/") || change.path.includes("\\") || change.path.split("/").some((part) => !part || part === "." || part === "..")) {
+    if (
+      !change.path ||
+      change.path.startsWith("/") ||
+      change.path.includes("\\") ||
+      change.path.split("/").some((part) => !part || part === "." || part === "..")
+    ) {
       throw new Error("AI vrátila neplatnú cestu súboru. Návrh nebol použitý.");
     }
-    if (seen.has(change.path)) throw new Error("AI vrátila duplicitné úpravy súboru. Návrh nebol použitý.");
-    if (omitted.includes(change.path)) throw new Error(`AI sa pokúsila prepísať neprečítaný súbor ${change.path}. Návrh nebol použitý.`);
+    if (seen.has(change.path))
+      throw new Error("AI vrátila duplicitné úpravy súboru. Návrh nebol použitý.");
+    if (omitted.includes(change.path))
+      throw new Error(
+        `AI sa pokúsila prepísať neprečítaný súbor ${change.path}. Návrh nebol použitý.`,
+      );
     seen.add(change.path);
   }
   return result;
 }
 
-export function canvasProjectMessage(prompt: string, files: CanvasFile[], omitted: string[], priorityPaths: string[]) {
+export function canvasProjectMessage(
+  prompt: string,
+  files: CanvasFile[],
+  omitted: string[],
+  priorityPaths: string[],
+) {
   return JSON.stringify({
     request: prompt,
     priorityPaths,

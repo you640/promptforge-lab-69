@@ -69,7 +69,10 @@ function renderCss(content: string): string {
 /** Vykreslí čitateľný náhľad projektu bez spustiteľného frontend kódu. */
 export function renderDocsPreview(files: CanvasFile[], selected?: string): string {
   const docs = files.filter((f) => /\.(md|json|css|svg|ya?ml|txt)$/i.test(f.path));
-  const file = docs.find((f) => f.path === selected) ?? docs.find((f) => /readme\.md$/i.test(f.path)) ?? docs[0];
+  const file =
+    docs.find((f) => f.path === selected) ??
+    docs.find((f) => /readme\.md$/i.test(f.path)) ??
+    docs[0];
   const svgs = files.filter((f) => f.path.endsWith(".svg")).slice(0, 12);
   if (!file) return `<p class="hint">V projekte nie sú dokumenty ani assety na zobrazenie.</p>`;
 

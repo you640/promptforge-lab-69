@@ -13,7 +13,9 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(SHELL_CACHE);
-      await Promise.allSettled(SHELL_URLS.map((url) => cache.add(new Request(url, { cache: "reload" }))));
+      await Promise.allSettled(
+        SHELL_URLS.map((url) => cache.add(new Request(url, { cache: "reload" }))),
+      );
       await self.skipWaiting();
     })(),
   );
@@ -66,7 +68,7 @@ async function staleWhileRevalidate(request) {
 
 function offlineResponse() {
   return new Response(
-    "<!doctype html><meta charset=utf-8><title>Offline</title><body style=\"font:15px system-ui;padding:2rem\">Si offline a táto stránka ešte nie je uložená. Skús to znova, keď budeš online.</body>",
+    '<!doctype html><meta charset=utf-8><title>Offline</title><body style="font:15px system-ui;padding:2rem">Si offline a táto stránka ešte nie je uložená. Skús to znova, keď budeš online.</body>',
     { headers: { "content-type": "text/html; charset=utf-8" }, status: 200 },
   );
 }

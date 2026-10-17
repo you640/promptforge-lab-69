@@ -84,7 +84,9 @@ function HelpPage() {
         {STEPS.map((s) => (
           <AccordionItem key={s.q} value={s.q} className="surface-card border-b px-5">
             <AccordionTrigger className="text-left">{s.q}</AccordionTrigger>
-            <AccordionContent className="pb-5 text-sm text-muted-foreground">{s.a}</AccordionContent>
+            <AccordionContent className="pb-5 text-sm text-muted-foreground">
+              {s.a}
+            </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>

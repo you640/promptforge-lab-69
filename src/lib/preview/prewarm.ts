@@ -23,11 +23,7 @@ export function prewarmPreview(): void {
     addLink("preconnect", origin);
   }
 
-  void import("@/components/canvas/LivePreview")
-    .then((mod) => mod)
-    .catch(() => undefined);
+  void import("@/components/canvas/LivePreview").then((mod) => mod).catch(() => undefined);
 
-  void import("@/lib/preview/bundler")
-    .then((mod) => mod.initBundler())
-    .catch(() => undefined);
+  void import("@/lib/preview/bundler").then((mod) => mod.initBundler()).catch(() => undefined);
 }
