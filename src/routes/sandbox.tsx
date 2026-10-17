@@ -59,7 +59,6 @@ function Sandbox() {
   const ra = useMemo(() => analyzePrompt(a), [a]);
   const rb = useMemo(() => analyzePrompt(b), [b]);
 
-
   const lighthouse = (score: number) => ({
     performance: Math.min(100, Math.round(score * 0.9 + 8)),
     accessibility: Math.min(100, Math.round(score * 0.85 + 12)),
@@ -73,25 +72,26 @@ function Sandbox() {
   return (
     <AppShell title="Testovací sandbox" subtitle="A/B porovnanie promptov a odhad Lighthouse skóre">
       <div className="grid gap-4 md:grid-cols-2">
-        {(
-          [
-            ["Verzia A", a, setA, ra] as const,
-            ["Verzia B", b, setB, rb] as const,
-          ]
-        ).map(([label, value, setValue, res]) => (
-          <div key={label} className="surface-card p-5">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="font-semibold">{label}</h3>
-              {ran && <Badge variant={winner === label.slice(-1) ? "default" : "secondary"}>{res.total}/100</Badge>}
+        {[["Verzia A", a, setA, ra] as const, ["Verzia B", b, setB, rb] as const].map(
+          ([label, value, setValue, res]) => (
+            <div key={label} className="surface-card p-5">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="font-semibold">{label}</h3>
+                {ran && (
+                  <Badge variant={winner === label.slice(-1) ? "default" : "secondary"}>
+                    {res.total}/100
+                  </Badge>
+                )}
+              </div>
+              <Textarea
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder={`Vlož ${label.toLowerCase()} promptu…`}
+                className="min-h-[200px] font-mono text-sm"
+              />
             </div>
-            <Textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder={`Vlož ${label.toLowerCase()} promptu…`}
-              className="min-h-[200px] font-mono text-sm"
-            />
-          </div>
-        ))}
+          ),
+        )}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -168,15 +168,9 @@ function Sandbox() {
         )}
       </div>
 
-
       {ran && (
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {(
-            [
-              ["Verzia A", ra] as const,
-              ["Verzia B", rb] as const,
-            ]
-          ).map(([label, res]) => {
+          {[["Verzia A", ra] as const, ["Verzia B", rb] as const].map(([label, res]) => {
             const lh = lighthouse(res.total);
             return (
               <div key={label} className="surface-card p-5">

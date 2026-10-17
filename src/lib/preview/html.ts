@@ -46,9 +46,7 @@ function inlineSafe(code: string): string {
 }
 
 function needsTailwindCdn(files: CanvasFile[]): boolean {
-  return files.some(
-    (f) => f.path.endsWith(".css") && /@tailwind|@apply/.test(f.content),
-  );
+  return files.some((f) => f.path.endsWith(".css") && /@tailwind|@apply/.test(f.content));
 }
 
 /** HTML dokument pre bundlovaný JS modul. */
@@ -137,7 +135,6 @@ export function staticDocument(
     : `<!doctype html><html><head><meta charset="utf-8">${injection}</head><body>${out}</body></html>`;
   return out;
 }
-
 
 /** Dokumentový režim / chybová stránka. */
 export function docsDocument(inner: string): string {

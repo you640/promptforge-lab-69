@@ -128,7 +128,11 @@ export function CloudImport({ onDone }: { onDone: () => void }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <Button className="w-full" onClick={withPassword} disabled={busy || !email || !password}>
+            <Button
+              className="w-full"
+              onClick={withPassword}
+              disabled={busy || !email || !password}
+            >
               {busy && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
               Preniesť projekty
             </Button>

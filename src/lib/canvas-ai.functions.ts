@@ -9,7 +9,10 @@ const inputSchema = z.object({
     .array(z.object({ path: z.string().min(1), content: z.string().max(120_000) }))
     .min(1)
     .max(300)
-    .refine((fs) => fs.reduce((n, f) => n + f.content.length, 0) <= 650_000, "Projekt je príliš veľký"),
+    .refine(
+      (fs) => fs.reduce((n, f) => n + f.content.length, 0) <= 650_000,
+      "Projekt je príliš veľký",
+    ),
   omitted: z.array(z.string()).max(2000).default([]),
   priorityPaths: z.array(z.string()).max(300).default([]),
 });

@@ -108,7 +108,6 @@ export default function LivePreview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan.mode, plan.target]);
 
-
   useEffect(() => {
     saveSettings(projectId ?? null, { ...(mode ? { mode } : {}), ...(target ? { target } : {}) });
   }, [projectId, mode, target]);
@@ -128,14 +127,11 @@ export default function LivePreview({
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       const data = event.data as
-        | { source?: string; level?: string; message?: string; stack?: string | null }
-        | undefined;
+        { source?: string; level?: string; message?: string; stack?: string | null } | undefined;
       if (data?.source !== "canvas-preview") return;
       if (data.level === "status") return;
       const message = [data.message, data.stack].filter(Boolean).join("\n");
-      const level = (["log", "info", "warn", "error"] as const).includes(
-        data.level as "log",
-      )
+      const level = (["log", "info", "warn", "error"] as const).includes(data.level as "log")
         ? (data.level as PreviewLogEntry["level"])
         : "log";
       pushLog({ level, message, ...locate(message, files) });
@@ -175,7 +171,6 @@ export default function LivePreview({
             if (cancelled) return;
             setDoc(staticDocument(files, path, compiled));
             setExternals([...deps]);
-
           } else if (mode === "react" || mode === "component") {
             let entryPath = target ?? plan.target;
             if (mode === "component" && (!entryPath || !plan.components.includes(entryPath)))
@@ -240,7 +235,6 @@ export default function LivePreview({
     if (mode === "component" && target && !plan.components.includes(target))
       setTarget(plan.components[0]);
   }, [mode, target, plan.components]);
-
 
   const targetOptions = useMemo(() => {
     if (mode === "component") return plan.components;

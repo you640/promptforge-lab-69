@@ -55,7 +55,12 @@ export function planPreview(files: CanvasFile[]): PreviewPlan {
   const components = findComponents(files);
   const notes: string[] = [];
   if (files.length === 0) {
-    return { mode: "none", label: "Prázdny projekt", components, notes: ["Projekt neobsahuje súbory."] };
+    return {
+      mode: "none",
+      label: "Prázdny projekt",
+      components,
+      notes: ["Projekt neobsahuje súbory."],
+    };
   }
 
   const paths = new Set(files.map((f) => f.path));
@@ -76,7 +81,9 @@ export function planPreview(files: CanvasFile[]): PreviewPlan {
     notes.push("V projekte nie je frontend entry point ani komponent na spustenie.");
     return { mode: "docs", label: "Dokumenty a assety", components, notes };
   }
-  notes.push("Projekt obsahuje len kód, ktorý sa v prehliadači nedá spustiť (server / konfigurácia).");
+  notes.push(
+    "Projekt obsahuje len kód, ktorý sa v prehliadači nedá spustiť (server / konfigurácia).",
+  );
   return { mode: "none", label: "Nespustiteľné v prehliadači", components, notes };
 }
 

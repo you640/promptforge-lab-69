@@ -21,8 +21,16 @@ describe("buildAiContext", () => {
   });
 
   it("includes unselected style, layout and interactive files", () => {
-    const files = [f("src/App.tsx"), f("src/styles.css"), f("src/components/Menu.tsx"), f("package.json")];
-    expect(buildAiContext(files, "Zmeň celý štýl a layout a interaktívne komponenty", ["src/App.tsx"]).files).toEqual(expect.arrayContaining(files));
+    const files = [
+      f("src/App.tsx"),
+      f("src/styles.css"),
+      f("src/components/Menu.tsx"),
+      f("package.json"),
+    ];
+    expect(
+      buildAiContext(files, "Zmeň celý štýl a layout a interaktívne komponenty", ["src/App.tsx"])
+        .files,
+    ).toEqual(expect.arrayContaining(files));
   });
 
   it("sends a full 90,000 character file without silent truncation", () => {
@@ -31,7 +39,12 @@ describe("buildAiContext", () => {
   });
 
   it("prioritizes shared styles over unrelated content for broad edits", () => {
-    const ctx = buildAiContext([f("a.txt", 60), f("src/styles.css", 60)], "Zmeň celý štýl stránky", [], 100);
+    const ctx = buildAiContext(
+      [f("a.txt", 60), f("src/styles.css", 60)],
+      "Zmeň celý štýl stránky",
+      [],
+      100,
+    );
     expect(ctx.files[0]?.path).toBe("src/styles.css");
   });
 

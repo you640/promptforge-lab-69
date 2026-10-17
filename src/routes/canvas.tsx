@@ -26,11 +26,7 @@ import { CloudImport } from "@/components/canvas/CloudImport";
 import { buildAiContext } from "@/lib/canvas-context";
 import { analyzePrompt, CRITERIA, type AnalysisResult } from "@/lib/criteria";
 import { exportZip, importZip } from "@/lib/canvas-zip";
-import {
-  type CanvasFile,
-  type CanvasVersion,
-  type ProposedChange,
-} from "@/lib/canvas-types";
+import { type CanvasFile, type CanvasVersion, type ProposedChange } from "@/lib/canvas-types";
 import {
   commitCanvasVersion,
   createCanvasProject,
@@ -49,7 +45,6 @@ import {
   readCachedProject,
   rememberLastProject,
 } from "@/lib/canvas-cache";
-
 
 const LivePreview = lazy(() => import("@/components/canvas/LivePreview"));
 
@@ -164,7 +159,6 @@ function CanvasPage() {
     }
   }, [projectId, loadState, detail.isFetching]);
 
-
   const versions = (detail.data?.versions ?? []) as unknown as CanvasVersion[];
   const activeFile = files.find((f) => f.path === activePath) ?? null;
 
@@ -221,12 +215,12 @@ function CanvasPage() {
     },
     onSuccess: () => {
       setDirty((prev) => prev.filter((p) => p !== activePath));
-      if (projectId) void cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", files);
+      if (projectId)
+        void cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", files);
       if (!autosave) toast.success("Súbor uložený");
     },
 
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : "Uloženie sa nepodarilo"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Uloženie sa nepodarilo"),
   });
 
   // Autosave: 1,5 s po poslednej úprave uložíme rozpracovaný súbor,
@@ -259,7 +253,12 @@ function CanvasPage() {
     setAudit(result);
     if (projectId) {
       await logRunFn({
-        data: { projectId, prompt, kind: "audit", result: { total: result.total, grade: result.grade } },
+        data: {
+          projectId,
+          prompt,
+          kind: "audit",
+          result: { total: result.total, grade: result.grade },
+        },
       }).catch(() => undefined);
     }
   };
@@ -267,7 +266,14 @@ function CanvasPage() {
   const proposeMutation = useMutation({
     mutationFn: async () => {
       if (aiContext.files.length === 0) throw new Error("Najprv nahraj projekt");
-      return proposeFn({ data: { prompt, files: aiContext.files, omitted: aiContext.omitted, priorityPaths: contextPaths } });
+      return proposeFn({
+        data: {
+          prompt,
+          files: aiContext.files,
+          omitted: aiContext.omitted,
+          priorityPaths: contextPaths,
+        },
+      });
     },
     onSuccess: async (res) => {
       setChanges(res.changes);
@@ -302,7 +308,8 @@ function CanvasPage() {
       setFiles(next);
       setChanges([]);
       setDirty([]);
-      if (projectId) await cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", next);
+      if (projectId)
+        await cacheProjectFiles(projectId, detail.data?.project.name ?? "canvas", next);
       await queryClient.invalidateQueries({ queryKey: ["canvas-project", projectId] });
       toast.success("Zmeny prijaté a uložené ako nová verzia");
     },
@@ -422,7 +429,6 @@ function CanvasPage() {
                 await queryClient.invalidateQueries({ queryKey: ["canvas-projects"] });
                 toast.success("Projekt zmazaný");
               }}
-
             >
               <Trash2 className="mr-1 h-4 w-4" /> Zmazať
             </Button>
@@ -540,7 +546,6 @@ function CanvasPage() {
                 </div>
               </TabsContent>
 
-
               <TabsContent value="prompt">
                 <div className="surface-card p-4">
                   <Textarea
@@ -550,7 +555,11 @@ function CanvasPage() {
                     className="min-h-[160px] font-mono text-sm"
                   />
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button variant="outline" onClick={() => void runAudit()} disabled={!prompt.trim()}>
+                    <Button
+                      variant="outline"
+                      onClick={() => void runAudit()}
+                      disabled={!prompt.trim()}
+                    >
                       <Sparkles className="mr-1 h-4 w-4" /> Audit promptu
                     </Button>
                     <Button
@@ -567,10 +576,14 @@ function CanvasPage() {
                   </div>
 
                   {proposeMutation.isPending && (
-                    <p role="status" className="mt-3 text-sm text-muted-foreground">Pripravujem prepojené úpravy projektu…</p>
+                    <p role="status" className="mt-3 text-sm text-muted-foreground">
+                      Pripravujem prepojené úpravy projektu…
+                    </p>
                   )}
                   {aiSummary && changes.length === 0 && (
-                    <p role="status" className="mt-3 text-sm text-muted-foreground">{aiSummary}</p>
+                    <p role="status" className="mt-3 text-sm text-muted-foreground">
+                      {aiSummary}
+                    </p>
                   )}
 
                   {audit && (

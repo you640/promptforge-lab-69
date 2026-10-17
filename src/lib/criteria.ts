@@ -1,11 +1,5 @@
 export type CriterionId =
-  | "specification"
-  | "technical"
-  | "uxui"
-  | "performance"
-  | "testing"
-  | "deployment"
-  | "creativity";
+  "specification" | "technical" | "uxui" | "performance" | "testing" | "deployment" | "creativity";
 
 export interface Criterion {
   id: CriterionId;
@@ -262,8 +256,7 @@ export function analyzePrompt(prompt: string): AnalysisResult {
   const text = norm(prompt);
   const words = prompt.trim() ? prompt.trim().split(/\s+/).length : 0;
   const lengthBonus = Math.min(20, Math.round(words / 12));
-  const structureBonus =
-    (/\n\s*[-*•\d]/.test(prompt) ? 8 : 0) + (/:/.test(prompt) ? 4 : 0);
+  const structureBonus = (/\n\s*[-*•\d]/.test(prompt) ? 8 : 0) + (/:/.test(prompt) ? 4 : 0);
 
   const scores: CriterionScore[] = CRITERIA.map((c) => {
     const matched = c.keywords.filter((k) => text.includes(norm(k)));
@@ -282,8 +275,7 @@ export function analyzePrompt(prompt: string): AnalysisResult {
     }, 0) / weightSum,
   );
 
-  const grade =
-    total >= 90 ? "A" : total >= 75 ? "B" : total >= 60 ? "C" : total >= 40 ? "D" : "F";
+  const grade = total >= 90 ? "A" : total >= 75 ? "B" : total >= 60 ? "C" : total >= 40 ? "D" : "F";
 
   const suggestions = scores
     .slice()
