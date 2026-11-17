@@ -59,8 +59,8 @@ export function AppShell({
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <aside className="hidden w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
+    <div className="flex min-h-screen w-full">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
         <Brand />
         <Nav pathname={pathname} />
         <SidebarFooter online={online} />
