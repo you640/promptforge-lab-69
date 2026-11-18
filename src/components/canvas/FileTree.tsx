@@ -1,4 +1,7 @@
-import { FileCode2 } from "lucide-react";
+import { FileCode2, Search } from "lucide-react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CanvasFile } from "@/lib/canvas-types";
 
@@ -17,9 +20,13 @@ export function FileTree({
   onSelect: (path: string) => void;
   onToggleContext: (path: string) => void;
 }) {
+  const [search, setSearch] = useState("");
+  const visible = files.filter((file) => file.path.toLowerCase().includes(search.toLowerCase()));
   return (
-    <ul className="max-h-[420px] space-y-0.5 overflow-y-auto pr-1 text-sm">
-      {files.map((f) => (
+    <div>
+    <div className="relative mb-3"><Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input aria-label="Vyhľadať súbor" placeholder="Vyhľadať súbor…" value={search} onChange={(event) => setSearch(event.target.value)} className="h-8 pl-8 text-xs" /></div>
+    <ul className="max-h-56 space-y-0.5 overflow-y-auto pr-1 text-sm lg:max-h-[620px]">
+      {visible.map((f) => (
         <li key={f.path} className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -28,11 +35,12 @@ export function FileTree({
             onChange={() => onToggleContext(f.path)}
             className="h-3.5 w-3.5 shrink-0 accent-primary"
           />
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={() => onSelect(f.path)}
             className={cn(
-              "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors",
+              "flex h-8 min-w-0 flex-1 justify-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors",
               active === f.path
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-muted",
@@ -43,12 +51,13 @@ export function FileTree({
             {changed.includes(f.path) && (
               <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-accent" aria-hidden />
             )}
-          </button>
+          </Button>
         </li>
       ))}
-      {files.length === 0 && (
+      {visible.length === 0 && (
         <li className="px-2 py-6 text-center text-xs text-muted-foreground">Žiadne súbory</li>
       )}
     </ul>
+    </div>
   );
 }

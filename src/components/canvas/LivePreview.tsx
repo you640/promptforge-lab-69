@@ -63,8 +63,8 @@ function saveSettings(projectId: string | null, value: Settings) {
 /** Z hlásenia vytiahne cestu k súboru a riadok, aby sa dalo skočiť do editora. */
 function locate(message: string, files: CanvasFile[]): { file?: string; line?: number } {
   const match = /([\w./@-]+\.(?:tsx|ts|jsx|js|css|html|json)):(\d+)/.exec(message);
-  if (match) {
-    const path = match[1]!.replace(/^\/+/, "");
+  if (match?.[1]) {
+    const path = match[1].replace(/^\/+/, "");
     const file = files.find((f) => f.path === path || f.path.endsWith(`/${path}`));
     if (file) return { file: file.path, line: Number(match[2]) };
   }
@@ -226,7 +226,7 @@ export default function LivePreview({
   // inak by select ukazoval prvú možnosť, ale build by bežal v starom režime.
   useEffect(() => {
     if (availableModes.includes(mode)) return;
-    setMode(availableModes.includes(plan.mode) ? plan.mode : availableModes[0]!);
+    setMode(availableModes.includes(plan.mode) ? plan.mode : (availableModes[0] ?? "docs"));
     setTarget(undefined);
   }, [availableModes, mode, plan.mode]);
 
@@ -298,18 +298,21 @@ export default function LivePreview({
           {(Object.keys(DEVICES) as DeviceKey[]).map((key) => {
             const Icon = DEVICES[key].icon;
             return (
-              <button
+              <Button
+                size="icon"
+                variant="ghost"
                 key={key}
                 type="button"
                 onClick={() => setDevice(key)}
                 title={DEVICES[key].label}
+                aria-label={DEVICES[key].label}
                 aria-pressed={device === key}
-                className={`rounded px-2 py-1 ${
+                className={`h-7 w-7 rounded ${
                   device === key ? "bg-primary/10 text-primary" : "text-muted-foreground"
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             );
           })}
         </div>

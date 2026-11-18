@@ -1,3 +1,5 @@
 # Tasks
-- [ ] Improve project-wide AI context and coordinated code changes.
-- [ ] Test multi-file changes and verify the Canvas proposal flow.
+- [ ] Unify global design tokens, navigation and shared controls.
+- [ ] Polish dashboard and workspace screens without changing AI or storage logic.
+- [ ] Verify desktop/mobile presentation and main navigation flows.
+- [ ] Verify live multi-file AI proposals (blocked by exhausted AI credits in previous verification).

@@ -10,8 +10,8 @@ export function DiffView({ before, after }: { before: string; after: string }) {
           key={`${i}-${line.text}`}
           className={cn(
             "whitespace-pre-wrap px-1 font-mono",
-            line.type === "add" && "bg-success/15 text-success",
-            line.type === "remove" && "bg-destructive/15 text-destructive line-through",
+             line.type === "add" && "border-l-2 border-success bg-success/10 text-success",
+             line.type === "remove" && "border-l-2 border-destructive bg-destructive/10 text-destructive line-through",
             line.type === "same" && "text-muted-foreground",
           )}
         >

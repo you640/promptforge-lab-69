@@ -94,6 +94,7 @@ function CanvasPage() {
   const [aiSummary, setAiSummary] = useState("");
   const [importing, setImporting] = useState(false);
   const [autosave, setAutosave] = useState(true);
+  const [workspaceTab, setWorkspaceTab] = useState("editor");
 
   // Stav načítavania: "cache" (čítame IndexedDB), "cloud" (synchronizujeme z cloudu), "ready" | null
   const [loadState, setLoadState] = useState<"cache" | "cloud" | "ready" | null>(null);
@@ -345,7 +346,7 @@ function CanvasPage() {
       title="Canvas"
       subtitle="Nahraj ZIP projektu, skúšaj prompty a uvidíš dopad bez zásahu do reálneho repozitára"
     >
-      <div className="surface-card mb-6 flex flex-wrap items-center gap-3 p-5">
+      <div className="mb-6 flex flex-wrap items-center gap-3 border-b border-border pb-5">
         <input
           ref={fileInput}
           type="file"
@@ -437,7 +438,7 @@ function CanvasPage() {
       </div>
 
       {!projectId ? (
-        <div className="surface-card grid place-items-center p-12 text-center">
+        <div className="blueprint-corner grid min-h-80 place-content-center justify-items-center border border-dashed border-primary/30 bg-card/60 p-6 text-center sm:p-12">
           <FolderUp className="mb-3 h-10 w-10 text-muted-foreground" />
           <h2 className="font-display text-lg font-semibold">Začni nahraním ZIP projektu</h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
@@ -446,8 +447,8 @@ function CanvasPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <div className="surface-card p-4">
+        <div className="grid items-start gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="surface-card p-4 lg:sticky lg:top-32">
             <h3 className="mb-3 text-sm font-semibold">
               Súbory <span className="text-muted-foreground">({files.length})</span>
             </h3>
@@ -470,15 +471,15 @@ function CanvasPage() {
           </div>
 
           <div className="min-w-0">
-            <Tabs defaultValue="editor">
-              <TabsList className="mb-4">
+            <Tabs value={workspaceTab} onValueChange={setWorkspaceTab} className={workspaceTab === "editor" ? "grid gap-4 xl:grid-cols-2" : "grid gap-4"}>
+              <TabsList className="col-span-full">
                 <TabsTrigger value="editor">Editor</TabsTrigger>
                 <TabsTrigger value="preview">Živý náhľad</TabsTrigger>
                 <TabsTrigger value="prompt">Prompt</TabsTrigger>
                 <TabsTrigger value="versions">Verzie</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="editor">
+              <TabsContent value="editor" className="mt-0 min-w-0">
                 <div className="surface-card p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <span className="truncate font-mono text-xs text-muted-foreground">
@@ -510,9 +511,10 @@ function CanvasPage() {
                     </div>
                   </div>
                   <Textarea
+                    aria-label="Obsah súboru"
                     value={activeFile?.content ?? ""}
                     onChange={(e) => updateActive(e.target.value)}
-                    className="min-h-[420px] font-mono text-xs"
+                    className="min-h-[520px] font-mono text-xs"
                     spellCheck={false}
                   />
                 </div>
@@ -520,7 +522,7 @@ function CanvasPage() {
 
               {/* forceMount: iframe s bundlerom zostáva nažive, takže prepnutie
                   na náhľad je okamžité namiesto nového buildu. */}
-              <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden">
+              <TabsContent value="preview" forceMount className={`mt-0 min-w-0 data-[state=inactive]:hidden ${workspaceTab === "editor" ? "xl:data-[state=inactive]:block" : ""}`}>
                 <div className="surface-card p-4">
                   <ClientOnly
                     fallback={
@@ -539,7 +541,7 @@ function CanvasPage() {
                       <LivePreview
                         files={files}
                         projectId={projectId}
-                        onOpenFile={(path) => setActivePath(path)}
+                        onOpenFile={(path) => { setActivePath(path); setWorkspaceTab("editor"); }}
                       />
                     </Suspense>
                   </ClientOnly>
@@ -549,6 +551,7 @@ function CanvasPage() {
               <TabsContent value="prompt">
                 <div className="surface-card p-4">
                   <Textarea
+                    aria-label="Prompt pre úpravy projektu"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="Napr.: Prerob hlavičku na sticky, pridaj tmavý režim a zlepši prístupnosť tlačidiel…"
@@ -616,6 +619,7 @@ function CanvasPage() {
                             Zamietnuť
                           </Button>
                           <Button
+                            variant="success"
                             onClick={() => acceptMutation.mutate()}
                             disabled={acceptMutation.isPending}
                           >

@@ -12,6 +12,8 @@ import { CRITERIA } from "@/lib/criteria";
 export const Route = createFileRoute("/kriteria")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Detail kritérií — Auditor Promptov pre PWA" },
       {
         name: "description",

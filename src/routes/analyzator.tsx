@@ -20,6 +20,8 @@ import { reviewPromptWithAi, type AiPromptReview } from "@/lib/prompt-ai.functio
 export const Route = createFileRoute("/analyzator")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Analyzátor promptov — Auditor Promptov pre PWA" },
       {
         name: "description",
@@ -84,13 +86,16 @@ function Analyzer() {
     <AppShell title="Analyzátor" subtitle="Editor promptu s automatickým hodnotením v reálnom čase">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="surface-card p-5">
+          <div className="mb-4 flex items-center justify-between gap-2"><h2 className="text-sm font-semibold">Zadanie projektu</h2><span className="blueprint-badge">PROMPT / EDITOR</span></div>
           <Input
+            aria-label="Názov promptu"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Názov promptu (napr. Fitness tracker PWA)"
             className="mb-3"
           />
           <Textarea
+            aria-label="Prompt pre PWA aplikáciu"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Vlož alebo napíš svoj prompt pre PWA aplikáciu…"
@@ -306,7 +311,8 @@ function Analyzer() {
 
         <TabsContent value="checklist" className="mt-4 grid gap-4 md:grid-cols-2">
           {result.scores.map((s) => {
-            const c = CRITERIA.find((x) => x.id === s.id)!;
+            const c = CRITERIA.find((x) => x.id === s.id);
+            if (!c) return null;
             return (
               <div key={s.id} className="surface-card p-5">
                 <div className="mb-3 flex items-center justify-between gap-2">
@@ -366,9 +372,9 @@ function Analyzer() {
                     key={i}
                     className={
                       line.type === "add"
-                        ? "bg-success/15 text-foreground"
+                        ? "border-l-2 border-success bg-success/10 px-2 text-success"
                         : line.type === "remove"
-                          ? "bg-destructive/10 text-muted-foreground line-through"
+                          ? "border-l-2 border-destructive bg-destructive/10 px-2 text-destructive line-through"
                           : ""
                     }
                   >

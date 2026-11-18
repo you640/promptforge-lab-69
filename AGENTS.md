@@ -12,3 +12,5 @@
 - Canvas AI context selection is project-wide and sends complete files with a full path manifest; checkboxes prioritize rather than restrict edits, avoiding incomplete coordinated changes.
 - Canvas AI generation and gateway helpers live in server-only modules, loaded inside the server function handler, to keep credentials and model calls out of the browser.
 - Validate a proposal as a complete set before previewing it; reject ambiguous paths and overwrites of unread files to protect project contents.
+
+- Shared presentation uses semantic global CSS tokens and shadcn variants; blueprint surfaces and technical typography stay centralized to keep every workspace consistent.

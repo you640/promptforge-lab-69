@@ -11,6 +11,8 @@ import { clearHistory, deleteEntry, loadHistory, type HistoryEntry } from "@/lib
 export const Route = createFileRoute("/historia")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "História a reporty — Auditor Promptov pre PWA" },
       {
         name: "description",

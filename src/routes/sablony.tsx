@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Copy, Wand2 } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ import { DRAFT_KEY } from "@/lib/storage";
 export const Route = createFileRoute("/sablony")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Návrhy a šablóny — Auditor Promptov pre PWA" },
       {
         name: "description",
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/sablony")({
 });
 
 function TemplatesPage() {
+  const navigate = useNavigate();
   const categories = ["Všetko", ...new Set(TEMPLATES.map((t) => t.category))];
   const [active, setActive] = useState("Všetko");
   const visible = TEMPLATES.filter((t) => active === "Všetko" || t.category === active);
@@ -52,7 +55,7 @@ function TemplatesPage() {
           <article key={t.id} className="surface-card flex flex-col p-5">
             <div className="mb-2 flex items-start justify-between gap-3">
               <h3 className="min-w-0 text-base font-semibold">{t.name}</h3>
-              <Badge variant="secondary" className="shrink-0">
+              <Badge variant="secondary" className="shrink-0 font-mono text-[10px]">
                 {t.category}
               </Badge>
             </div>
@@ -75,6 +78,7 @@ function TemplatesPage() {
                 size="sm"
                 onClick={() => {
                   localStorage.setItem(DRAFT_KEY, t.body);
+                  void navigate({ to: "/analyzator" });
                   toast.success("Šablóna načítaná do analyzátora");
                 }}
               >

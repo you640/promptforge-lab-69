@@ -15,6 +15,8 @@ import { loadLighthouseAudits, saveLighthouseAudits } from "@/lib/storage";
 export const Route = createFileRoute("/sandbox")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Testovací sandbox — Auditor Promptov pre PWA" },
       {
         name: "description",
@@ -84,6 +86,7 @@ function Sandbox() {
                 )}
               </div>
               <Textarea
+                aria-label={`${label} promptu`}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder={`Vlož ${label.toLowerCase()} promptu…`}
@@ -98,9 +101,7 @@ function Sandbox() {
         <Button onClick={() => setRan(true)} disabled={!a.trim() || !b.trim()}>
           <Play className="mr-1 h-4 w-4" /> Spustiť test
         </Button>
-        <p className="text-xs text-muted-foreground">
-          Porovnanie promptov beží lokálne v prehliadači — funguje aj bez internetu.
-        </p>
+        {ran && <span className="blueprint-badge text-success">{winner ? `VERZIA ${winner} / +${Math.abs(ra.total - rb.total)} BODOV` : "ZHODNÉ SKÓRE"}</span>}
       </div>
 
       <div className="surface-card mt-6 p-5">

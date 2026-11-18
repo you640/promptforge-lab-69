@@ -13,6 +13,8 @@ import { defaultSettings, loadSettings, saveSettings, type Settings } from "@/li
 export const Route = createFileRoute("/nastavenia")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Nastavenia a tím — Auditor Promptov pre PWA" },
       {
         name: "description",
